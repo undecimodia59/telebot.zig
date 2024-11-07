@@ -31,7 +31,7 @@ pub const InputMediaVideo = struct {
     // File to send. Pass a file_id to send a file that exists on the Telegram servers
     media: []const u8,
     // Optional. Thumbnail of the file sent
-    thumbnail: ?InputFileOrString,
+    thumbnail: ?[]const u8,
     // Optional. Caption of the video to be sent
     caption: ?[]const u8,
     // Optional. Mode for parsing entities in the video caption
@@ -58,7 +58,7 @@ pub const InputMediaAnimation = struct {
     // File to send. Pass a file_id to send a file that exists on the Telegram servers
     media: []const u8,
     // Optional. Thumbnail of the file sent
-    thumbnail: ?InputFileOrString,
+    thumbnail: ?[]const u8,
     // Optional. Caption of the animation to be sent
     caption: ?[]const u8,
     // Optional. Mode for parsing entities in the animation caption
@@ -83,7 +83,7 @@ pub const InputMediaAudio = struct {
     // File to send. Pass a file_id to send a file that exists on the Telegram servers
     media: []const u8,
     // Optional. Thumbnail of the file sent
-    thumbnail: ?InputFileOrString,
+    thumbnail: ?[]const u8,
     // Optional. Caption of the audio to be sent
     caption: ?[]const u8,
     // Optional. Mode for parsing entities in the audio caption
@@ -104,7 +104,7 @@ pub const InputMediaDocument = struct {
     // File to send. Pass a file_id to send a file that exists on the Telegram servers
     media: []const u8,
     // Optional. Thumbnail of the file sent
-    thumbnail: ?InputFileOrString,
+    thumbnail: ?[]const u8,
     // Optional. Caption of the document to be sent
     caption: ?[]const u8,
     // Optional. Mode for parsing entities in the document caption
@@ -113,14 +113,4 @@ pub const InputMediaDocument = struct {
     caption_entities: ?[]MessageEntity,
     // Optional. Disables automatic server-side content type detection for files
     disable_content_type_detection: ?bool,
-};
-
-pub const InputFileOrString = union(enum) {
-    File: InputFile,
-    String: []const u8,
-};
-
-pub const InputFile = struct {
-    // TODO: IDK HOW TO DO THIS
-    // WILL STEAL FROM SOMEONES CODE
 };

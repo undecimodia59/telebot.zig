@@ -1,5 +1,3 @@
-const InputFileOrString = @import("InputMedia.zig").InputFileOrString;
-
 pub const InputPaidMedia = union(enum) {
     Photo: InputPaidMediaPhoto,
     Video: InputPaidMediaVideo,
@@ -20,7 +18,7 @@ pub const InputPaidMediaVideo = struct {
     // or an HTTP URL, or an attach:// for multipart upload
     media: []const u8,
     // Optional. Thumbnail of the video sent; can be passed as InputFile or String
-    thumbnail: ?InputFileOrString,
+    thumbnail: ?[]const u8,
     // Optional. Video width
     width: ?i32,
     // Optional. Video height
