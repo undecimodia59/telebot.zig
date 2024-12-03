@@ -1,6 +1,9 @@
 const std = @import("std");
-const Message = @import("types/Message.zig").Message;
+const Bot = @import("core/bot.zig").Bot;
+const TOKEN = @import("config.zig").TOKEN;
 
 pub fn main() !void {
-    std.debug.print("Hello, world!\n", .{});
+    const bot = Bot.init(std.heap.page_allocator, TOKEN);
+    const me = try bot.getMe();
+    std.debug.print("Bot '{s}' started @{s} ({d})", .{me.first_name, me.username.?, me.id});
 }
