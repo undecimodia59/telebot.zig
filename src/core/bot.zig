@@ -1,5 +1,6 @@
 const std = @import("std");
 const types = @import("../types/types.zig");
+const params = @import("parameters/parameters.zig");
 const json = @import("../json/parser.zig");
 const HTTP = @import("../http/client.zig").HTTP;
 const ArrayList = std.ArrayList;
@@ -31,13 +32,34 @@ pub const Bot = struct {
         return try self.inner(types.User, "getMe");
     }
 
+    /// Use this method to send text messages. On success, the sent Message is returned.
+    /// DO NOT DISCARD RESULT! YOU SHOULD DEINIT IT!
+    pub fn sendMessage(self: *Self, options: params.sendMessageParams) !json.ParsedResult(types.Message) {
+        return try self.innerWithBody(types.Message, params.sendMessageParams, "sendMessage", options);
+    }
+
     // Private methods
 
     fn inner(self: *Self, comptime T: type, method: []const u8) !json.ParsedResult(T) {
         const url = try self.buildUrl(method);
         defer self.allocator.free(url);
 
-        const response_json = try self.baseRequest(url);
+        const response_json = try self.baseRequest(url, null);
+
+        const result = try self.jsonifier.ObjectFromJson(T, response_json);
+        return result;
+    }
+
+    /// T - type of expected result
+    /// T2 - type of body
+    fn innerWithBody(self: *Self, comptime T: type, comptime T2: type, method: []const u8, body: ?T2) !json.ParsedResult(T) {
+        const url = try self.buildUrl(method);
+        defer self.allocator.free(url);
+
+        const body_json: []const u8 = if (body) |bytes| try self.jsonifier.JsonFromObject(T2, bytes) else "{}";
+        defer self.allocator.free(body_json);
+
+        const response_json = try self.baseRequest(url, body_json);
 
         const result = try self.jsonifier.ObjectFromJson(T, response_json);
         return result;
@@ -55,7 +77,11 @@ pub const Bot = struct {
         return try final_url.toOwnedSlice();
     }
 
-    fn baseRequest(self: *Self, url: []u8) ![]u8 {
-        return self.http_client.make_request(url);
+    fn baseRequest(self: *Self, url: []u8, body_json: ?[]const u8) ![]u8 {
+        if (body_json) |body| {
+            return try self.http_client.makePostRequest(url, body);
+        } else {
+            return try self.http_client.makeRequest(url);
+        }
     }
 };

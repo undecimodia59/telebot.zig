@@ -17,33 +17,33 @@ const User = @import("User.zig").User;
 ///    // Do something with channel
 ///    },
 /// }
-const MessageOrigin = union(enum) {
+pub const MessageOrigin = union(enum) {
     User: MessageOriginUser,
     HiddenUser: MessageOriginHiddenUser,
     Chat: MessageOriginChat,
     Channel: MessageOriginChannel,
 };
 
-const MessageOriginUser = struct {
+pub const MessageOriginUser = struct {
     type: []const u8, // "user"
     date: i64, // Unix timestamp
     sender_user: User,
 };
 
-const MessageOriginHiddenUser = struct {
+pub const MessageOriginHiddenUser = struct {
     type: []const u8, // "hidden_user"
     date: i64, // Unix timestamp
     sender_user_name: []const u8,
 };
 
-const MessageOriginChat = struct {
+pub const MessageOriginChat = struct {
     type: []const u8, // "chat"
     date: i64, // Unix timestamp
     sender_chat: Chat,
     author_signature: ?[]const u8, // Optional field
 };
 
-const MessageOriginChannel = struct {
+pub const MessageOriginChannel = struct {
     type: []const u8, // "channel"
     date: i64, // Unix timestamp
     chat: Chat,

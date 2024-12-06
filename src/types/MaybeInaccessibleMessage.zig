@@ -6,5 +6,5 @@ pub const MaybeInaccessibleMessage = union(enum) {
         chat: Chat, // Chat associated with the inaccessible message
         inaccessible_message: []const u8, // Inaccessible message text
     },
-    Message: Message,
+    Message: *Message,
 };

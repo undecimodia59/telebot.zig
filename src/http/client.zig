@@ -17,7 +17,7 @@ pub const HTTP = struct {
         self.client.deinit();
     }
 
-    pub fn make_request(self: *HTTP, url: []const u8) ![]u8 {
+    pub fn makeRequest(self: *HTTP, url: []const u8) ![]u8 {
         const uri = try std.Uri.parse(url);
 
         const server_header_buffer: []u8 = try self.allocator.alloc(u8, 1024 * 8);
@@ -29,6 +29,7 @@ pub const HTTP = struct {
         defer request.deinit();
 
         try request.send();
+
         try request.finish();
         try request.wait();
 
@@ -39,5 +40,16 @@ pub const HTTP = struct {
 
         _ = try request.reader().readAllArrayList(&response, 1024 * 8);
         return try response.toOwnedSlice();
+    }
+
+    pub fn makePostRequest(self: *HTTP, url: []const u8, body: []const u8) ![]u8 {
+        var response_storage = ArrayList(u8).init(self.allocator);
+        defer response_storage.deinit();
+
+        _ = try self.client.fetch(.{ .response_storage = .{ .dynamic = &response_storage }, .payload = body, .method = .POST, .location = .{ .url = url }, .headers = .{ .content_type = .{ .override = "application/json" } } });
+
+        std.debug.print("resp_store: {s}\n\n", .{response_storage.items});
+
+        return response_storage.toOwnedSlice();
     }
 };

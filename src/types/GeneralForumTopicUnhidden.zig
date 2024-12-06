@@ -1,1 +1,1 @@
-pub const GeneralForumTopicUnhidden = struct { _unused: void };
+pub const GeneralForumTopicUnhidden = struct {};

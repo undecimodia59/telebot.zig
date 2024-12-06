@@ -3,7 +3,7 @@ const std = @import("std");
 const PhotoSize = @import("PhotoSize.zig").PhotoSize;
 const Video = @import("Video.zig").Video;
 
-const PaidMedia = union(enum) {
+pub const PaidMedia = union(enum) {
     PaidMediaPreview: struct {
         type: []const u8,
         width: i32,

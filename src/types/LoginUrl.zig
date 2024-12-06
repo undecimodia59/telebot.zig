@@ -1,6 +1,6 @@
 const std = @import("std");
 
-const LoginUrl = struct {
+pub const LoginUrl = struct {
     /// An HTTPS URL to be opened with user authorization data added to the query string when the button is pressed.
     url: ?*const u8,
 

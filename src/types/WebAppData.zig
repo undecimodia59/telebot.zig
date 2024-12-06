@@ -1,6 +1,6 @@
 const std = @import("std");
 
-const WebAppData = struct {
+pub const WebAppData = struct {
     /// The data. Be aware that a bad client can send arbitrary data in this field.
     data: *const u8,
 

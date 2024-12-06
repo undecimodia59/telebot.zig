@@ -1,1 +1,1 @@
-pub const ForumTopicReopened = struct { _unused: void };
+pub const ForumTopicReopened = struct {};

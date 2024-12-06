@@ -56,11 +56,11 @@ pub const Jsonifier = struct {
     }
 
     /// Cast json to T
-    pub fn ObjectFromJson(self: Self, comptime T: type, json_str: []u8) api_error.ApiError!ParsedResult(T) {
+    pub fn ObjectFromJson(self: Self, comptime T: type, json_str: []u8) !ParsedResult(T) {
         std.log.debug("Json received json: {s}", .{json_str});
         const parsed = std.json.parseFromSlice(Result(T), self.allocator, json_str, .{}) catch |e| {
             std.log.err("Error on json parsing: {any}", .{e});
-            std.process.exit(1);
+            return e;
         };
         defer parsed.deinit();
 
@@ -75,7 +75,8 @@ pub const Jsonifier = struct {
     /// Cast T to json
     pub fn JsonFromObject(self: Self, comptime T: type, value: T) ![]u8 {
         var string = ArrayList(u8).init(self.allocator);
-        try std.json.stringify(value, .{}, string.writer());
+        try std.json.stringify(value, .{ .emit_null_optional_fields = false }, string.writer());
+        std.log.debug("Json created: {s}", .{string.items});
         return try string.toOwnedSlice();
     }
 };
