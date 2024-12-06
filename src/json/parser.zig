@@ -18,29 +18,45 @@ pub fn Result(comptime T: type) type {
     };
 }
 
-/// T should be deallocated!
-pub fn Json(comptime T: type, json_str: []u8, allocator: std.mem.Allocator) api_error.ApiError!Result(T) {
+/// To access T, user ParsedResult.object
+/// ```zig
+/// var me_result = try bot.getMe();
+/// defer me_result.deinit();
+/// const me = me_result.object;
+/// const id = me.id;
+/// const first_name = me.first_name;
+/// ```
+pub fn ParsedResult(comptime T: type) type {
+    return struct {
+        data: []u8,
+        object: T,
+        result: Result(T),
+        allocator: std.mem.Allocator,
+
+        const Self = @This();
+
+        pub fn deinit(self: *Self) void {
+            self.allocator.free(self.data);
+        }
+
+        pub fn init(_allocator: std.mem.Allocator, _result: Result(T), _data: []u8) Self {
+            return Self{ .data = _data, .result = _result, .allocator = _allocator, .object = _result.result.? };
+        }
+    };
+}
+
+pub fn Json(comptime T: type, json_str: []u8, allocator: std.mem.Allocator) api_error.ApiError!ParsedResult(T) {
     std.log.debug("Json received json: {s}", .{json_str});
-    const parsed = std.json.parseFromSlice(
-        Result(T), allocator, json_str, .{}
-    ) catch |e| {
+    const parsed = std.json.parseFromSlice(Result(T), allocator, json_str, .{}) catch |e| {
         std.log.err("Error on json parsing: {any}", .{e});
         std.process.exit(1);
     };
     defer parsed.deinit();
 
-    const object: Result(T) = Result(T){
-        .ok = parsed.value.ok,
-        .description = parsed.value.description,
-        .error_code = parsed.value.error_code,
-        .parameters = parsed.value.parameters,
-        .result = parsed.value.result
-    };
-    if (!object.ok) {
-        std.log.err("Telegram Bot API error. Code: {d}. Description: {s}",
-            .{object.error_code.?, object.description.?});
-        return api_error.fromErrorCode(object.error_code.?, object.description.?);
+    if (!parsed.value.ok) {
+        std.log.err("Telegram Bot API error. Code: {d}. Description: {s}", .{ parsed.value.error_code.?, parsed.value.description.? });
+        return api_error.fromErrorCode(parsed.value.error_code.?, parsed.value.description.?);
     } else {
-        return object;
+        return ParsedResult(T).init(allocator, parsed.value, json_str);
     }
 }

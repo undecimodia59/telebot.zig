@@ -25,22 +25,20 @@ pub const Bot = struct {
 
     /// A simple method for testing your bot's authentication token. Requires no parameters.
     /// Returns basic information about the bot in form of a User object.
-    pub fn getMe(self: *Self) !types.User {
+    pub fn getMe(self: *Self) !json.ParsedResult(types.User) {
         return try self.inner(types.User, "getMe");
     }
 
     // Private methods
 
-    fn inner(self: *Self, comptime T: type, method: []const u8) !T {
+    fn inner(self: *Self, comptime T: type, method: []const u8) !json.ParsedResult(T) {
         const url = try self.buildUrl(method);
         defer self.allocator.free(url);
 
-        // Here's fucking leak, but json somehow uses this in runtime
-        // and free of this memory cause Use-After-Free...
         const response_json = try self.baseRequest(url);
 
         const result = try json.Json(T, response_json, self.allocator);
-        return result.result.?;
+        return result;
     }
 
     fn buildUrl(self: Self, method: []const u8) ![]u8 {

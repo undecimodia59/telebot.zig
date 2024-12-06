@@ -13,6 +13,9 @@ pub fn main() !void {
 
     var bot = Bot.init(gpa.allocator(), TOKEN);
     defer bot.deinit();
-    const me = try bot.getMe();
-    std.debug.print("Hi! Im bot on zig! My name if {s} (@{s}). My id: {d}\n", .{ me.first_name, me.username.?, me.id });
+    var me_res = try bot.getMe();
+    defer me_res.deinit();
+
+    const me = me_res.object;
+    std.debug.print("Hi! Im bot on zig! My name is {s} (@{s}). My id: {d}\n", .{ me.first_name, me.username.?, me.id });
 }
