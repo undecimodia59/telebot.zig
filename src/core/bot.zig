@@ -12,12 +12,14 @@ pub const Bot = struct {
     token: []const u8,
     allocator: std.mem.Allocator,
     http_client: HTTP,
+    jsonifier: json.Jsonifier,
 
     const Self = @This();
 
-    pub fn init(allocator: std.mem.Allocator, token: []const u8) Bot {
+    pub fn init(allocator: std.mem.Allocator, token: []const u8) Self {
         const http_client = HTTP.init(allocator);
-        return Bot{ .allocator = allocator, .token = token, .http_client = http_client };
+        const jsonifier = json.Jsonifier.init(allocator);
+        return Self{ .allocator = allocator, .token = token, .http_client = http_client, .jsonifier = jsonifier };
     }
     pub fn deinit(self: *Self) void {
         self.http_client.deinit();
@@ -37,7 +39,7 @@ pub const Bot = struct {
 
         const response_json = try self.baseRequest(url);
 
-        const result = try json.Json(T, response_json, self.allocator);
+        const result = try self.jsonifier.ObjectFromJson(T, response_json);
         return result;
     }
 

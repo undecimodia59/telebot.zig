@@ -1,5 +1,6 @@
 const std = @import("std");
-const api_error = @import("error.zig");
+const api_error = @import("../core/error.zig");
+const ArrayList = std.ArrayList;
 
 pub fn Result(comptime T: type) type {
     return struct {
@@ -45,18 +46,36 @@ pub fn ParsedResult(comptime T: type) type {
     };
 }
 
-pub fn Json(comptime T: type, json_str: []u8, allocator: std.mem.Allocator) api_error.ApiError!ParsedResult(T) {
-    std.log.debug("Json received json: {s}", .{json_str});
-    const parsed = std.json.parseFromSlice(Result(T), allocator, json_str, .{}) catch |e| {
-        std.log.err("Error on json parsing: {any}", .{e});
-        std.process.exit(1);
-    };
-    defer parsed.deinit();
+pub const Jsonifier = struct {
+    allocator: std.mem.Allocator,
 
-    if (!parsed.value.ok) {
-        std.log.err("Telegram Bot API error. Code: {d}. Description: {s}", .{ parsed.value.error_code.?, parsed.value.description.? });
-        return api_error.fromErrorCode(parsed.value.error_code.?, parsed.value.description.?);
-    } else {
-        return ParsedResult(T).init(allocator, parsed.value, json_str);
+    const Self = @This();
+
+    pub fn init(allocator: std.mem.Allocator) Self {
+        return Self{ .allocator = allocator };
     }
-}
+
+    /// Cast json to T
+    pub fn ObjectFromJson(self: Self, comptime T: type, json_str: []u8) api_error.ApiError!ParsedResult(T) {
+        std.log.debug("Json received json: {s}", .{json_str});
+        const parsed = std.json.parseFromSlice(Result(T), self.allocator, json_str, .{}) catch |e| {
+            std.log.err("Error on json parsing: {any}", .{e});
+            std.process.exit(1);
+        };
+        defer parsed.deinit();
+
+        if (!parsed.value.ok) {
+            std.log.err("Telegram Bot API error. Code: {d}. Description: {s}", .{ parsed.value.error_code.?, parsed.value.description.? });
+            return api_error.fromErrorCode(parsed.value.error_code.?, parsed.value.description.?);
+        } else {
+            return ParsedResult(T).init(self.allocator, parsed.value, json_str);
+        }
+    }
+
+    /// Cast T to json
+    pub fn JsonFromObject(self: Self, comptime T: type, value: T) ![]u8 {
+        var string = ArrayList(u8).init(self.allocator);
+        try std.json.stringify(value, .{}, string.writer());
+        return try string.toOwnedSlice();
+    }
+};
