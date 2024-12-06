@@ -5,7 +5,6 @@ const HTTP = @import("../http/client.zig").HTTP;
 const ArrayList = std.ArrayList;
 
 const BASE_API_URL = "https://api.telegram.org/bot";
-const JSON_POINTER_TYPE = *const []u8;
 
 /// Main class for whole lib
 /// Used for sending, filtering and accepting messages
