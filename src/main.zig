@@ -37,5 +37,6 @@ fn sendTestMessage(bot: *Bot) !void {
     const name = m.chat.first_name orelse "NoFirstName";
     // Read of msg brokes when emoji in there
     // TODO: Fix this issue
+    // UPD: Problem with unicode. Same issue: https://ziggit.dev/t/unicode-utf-8-decoding-and-json-parsing-issues/6327
     std.debug.print("I have sent message with id: {d} for {s} (@{s})\n", .{ m.message_id, name, username });
 }
