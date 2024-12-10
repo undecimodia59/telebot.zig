@@ -58,10 +58,11 @@ pub const Jsonifier = struct {
     /// Cast json to T
     pub fn ObjectFromJson(self: Self, comptime T: type, json_str: []u8) !ParsedResult(T) {
         std.log.debug("Json received json: {s}", .{json_str});
-        const parsed = std.json.parseFromSlice(Result(T), self.allocator, json_str, .{}) catch |e| {
-            std.log.err("Error on json parsing: {any}", .{e});
-            return e;
-        };
+        const parsed = try std.json.parseFromSlice(Result(T), self.allocator, json_str, .{});
+        // catch |e| {
+        //     std.log.err("Error on json parsing: {any}", .{e});
+        //     return e;
+        // };
         defer parsed.deinit();
 
         if (!parsed.value.ok) {

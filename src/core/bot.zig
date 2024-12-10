@@ -33,9 +33,15 @@ pub const Bot = struct {
     }
 
     /// Use this method to send text messages. On success, the sent Message is returned.
-    /// DO NOT DISCARD RESULT! YOU SHOULD DEINIT IT!
     pub fn sendMessage(self: *Self, options: params.sendMessageParams) !json.ParsedResult(types.Message) {
         return try self.innerWithBody(types.Message, params.sendMessageParams, "sendMessage", options);
+    }
+
+    /// Use this method to forward messages of any kind.
+    /// Service messages and messages with protected content can't be forwarded.
+    /// On success, the sent Message is returned.
+    pub fn forwardMessage(self: *Self, options: params.forwardMessageParams) !json.ParsedResult(types.Message) {
+        return try self.innerWithBody(types.Message, params.forwardMessageParams, "forwardMessage", options);
     }
 
     // Private methods

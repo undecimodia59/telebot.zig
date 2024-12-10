@@ -46,9 +46,9 @@ pub const HTTP = struct {
         var response_storage = ArrayList(u8).init(self.allocator);
         defer response_storage.deinit();
 
-        _ = try self.client.fetch(.{ .response_storage = .{ .dynamic = &response_storage }, .payload = body, .method = .POST, .location = .{ .url = url }, .headers = .{ .content_type = .{ .override = "application/json" } } });
+        const status = try self.client.fetch(.{ .response_storage = .{ .dynamic = &response_storage }, .payload = body, .method = .POST, .location = .{ .url = url }, .headers = .{ .content_type = .{ .override = "application/json" } } });
 
-        std.debug.print("resp_store: {s}\n\n", .{response_storage.items});
+        std.log.debug("Request to {s} ({d})", .{ url, status.status });
 
         return response_storage.toOwnedSlice();
     }

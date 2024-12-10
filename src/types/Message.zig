@@ -137,4 +137,6 @@ pub const Message = struct {
     video_chat_participants_invited: ?VideoChatParticipantsInvited = null,
     web_app_data: ?WebAppData = null,
     reply_markup: ?InlineKeyboardMarkup = null,
+    forward_from: ?User = null,
+    forward_date: ?i32 = null,
 };

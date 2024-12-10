@@ -2,8 +2,8 @@ const types = @import("../../types/types.zig");
 
 /// Only optional params. Not optional will be provided in function
 pub const SendMessageParameters = struct {
-    /// Unique identifier for the target chat or username of the target channel (in the format @channelusername)
-    /// TODO: Add support for string like `@channelusername`
+    /// Unique identifier for the target chat.
+    /// Not supporting username of the target channel (in the format @channelusername)
     chat_id: i64,
 
     /// Text of the message to be sent, 1-4096 characters after entities parsing
