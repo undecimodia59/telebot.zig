@@ -4,18 +4,19 @@
 ![Zig](https://img.shields.io/badge/Zig_version-0.13.0-orange)
 
 ---
+### Content:
 - [Usage](#usage)
 - [TODO](#todo)
 ---
 
-## Usage: {#usage}
-### Create bot object:
+### Usage:
+#### Create bot object:
 ```zig
 var bot = Bot.init(std.heap.page_allocator, TOKEN);
 defer bot.deinit();
 ```
 
-### Get bot information:
+#### Get bot information:
 ```zig
 /// Receive and print details about bot
 fn printMe(bot: *Bot) !void {
@@ -27,7 +28,7 @@ fn printMe(bot: *Bot) !void {
 }
 ```
 
-### Send message:
+#### Send message:
 ```zig
 /// Sends single message
 fn sendTestMessage(bot: *Bot) !void {
@@ -49,7 +50,7 @@ fn sendTestMessage(bot: *Bot) !void {
 }
 ```
 
-### Forward single message:
+#### Forward single message:
 ```zig
 /// Will send single message and then forward it to the same dialog
 fn forwardTestMessage(bot: *Bot) !void {
@@ -65,7 +66,7 @@ fn forwardTestMessage(bot: *Bot) !void {
 }
 ```
 
-### Forward multiple messages:
+#### Forward multiple messages:
 ```zig
 /// This method whill send two different messages
 /// and then forward both of them
@@ -88,7 +89,7 @@ fn forwardTestMessages(bot: *Bot) !void {
 }
 ```
 
-### Copy message:
+#### Copy message:
 ```zig
 /// Will send message and then copy it to the same chat
 fn copyTestMessage(bot: *Bot) !void {
@@ -101,7 +102,7 @@ fn copyTestMessage(bot: *Bot) !void {
 }
 ```
 
-### Send photo:
+#### Send photo:
 ```zig
 /// Will send just photo by url, then extract file_id and send with caption, spoiler and caption above photo
 /// Currently support sending photos by url or file_id (no file upload)
@@ -122,7 +123,7 @@ fn sendTestPhoto(bot: *Bot) !void {
 }
 ```
 
-### Send audio:
+#### Send audio:
 ```zig
 /// Sending audio by url, then extract file_id and send again by file_id with caption and parse_mode
 fn sendTestAudio(bot: *Bot) !void {
@@ -141,7 +142,7 @@ fn sendTestAudio(bot: *Bot) !void {
 ```
 > And more methods avaliable in this lib
 ---
-## TODO: {#todo}
+## TODO:
 - [x] TelegramBotAPI Types
 - [ ] TelegramBotAPI Methods
 - [ ] Polling
