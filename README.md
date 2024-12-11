@@ -3,7 +3,12 @@
 ![Telegram Bot API](https://img.shields.io/badge/Telegram_Bot_Api-8.0-blue)
 ![Zig](https://img.shields.io/badge/Zig_version-0.13.0-orange)
 
-## Usage:
+---
+- [Usage](#usage)
+- [TODO](#todo)
+---
+
+## Usage: {#usage}
 ### Create bot object:
 ```zig
 var bot = Bot.init(std.heap.page_allocator, TOKEN);
@@ -134,5 +139,11 @@ fn sendTestAudio(bot: *Bot) !void {
     m2.deinit();
 }
 ```
-> More methods will be added
+> And more methods avaliable in this lib
 ---
+## TODO: {#todo}
+- [x] TelegramBotAPI Types
+- [ ] TelegramBotAPI Methods
+- [ ] Polling
+- [ ] States
+- [ ] Fix all `TODO`
