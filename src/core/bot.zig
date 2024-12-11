@@ -44,6 +44,12 @@ pub const Bot = struct {
         return try self.innerWithBody(types.Message, params.forwardMessageParams, "forwardMessage", options);
     }
 
+    /// Use this method to forward multiple messages of any kind. If some of the specified messages can't be found or forwarded, they are skipped. Service messages and messages with protected content can't be forwarded.
+    /// Album grouping is kept for forwarded messages. On success, an array of MessageId of the sent messages is returned.
+    pub fn forwardMessages(self: *Self, options: params.forwardMessagesParams) !json.ParsedResult([]types.MessageId) {
+        return try self.innerWithBody([]types.MessageId, params.forwardMessagesParams, "forwardMessages", options);
+    }
+
     // Private methods
 
     fn inner(self: *Self, comptime T: type, method: []const u8) !json.ParsedResult(T) {

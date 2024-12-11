@@ -23,25 +23,29 @@ pub fn Result(comptime T: type) type {
 /// ```zig
 /// var me_result = try bot.getMe();
 /// defer me_result.deinit();
-/// const me = me_result.object;
+/// const me = me_result.data;
 /// const id = me.id;
 /// const first_name = me.first_name;
 /// ```
 pub fn ParsedResult(comptime T: type) type {
     return struct {
-        data: []u8,
-        object: T,
-        result: Result(T),
+        /// Your object stored here
+        data: T,
+        /// Pointer to result of json parsing
+        parsed: std.json.Parsed(Result(T)),
+        /// Received json in string
+        json_str: []u8,
         allocator: std.mem.Allocator,
 
         const Self = @This();
 
         pub fn deinit(self: *Self) void {
-            self.allocator.free(self.data);
+            self.allocator.free(self.json_str);
+            self.parsed.deinit();
         }
 
-        pub fn init(_allocator: std.mem.Allocator, _result: Result(T), _data: []u8) Self {
-            return Self{ .data = _data, .result = _result, .allocator = _allocator, .object = _result.result.? };
+        pub fn init(allocator: std.mem.Allocator, parsed: std.json.Parsed(Result(T)), json_str: []u8, data: T) Self {
+            return Self{ .allocator = allocator, .parsed = parsed, .json_str = json_str, .data = data };
         }
     };
 }
@@ -58,18 +62,19 @@ pub const Jsonifier = struct {
     /// Cast json to T
     pub fn ObjectFromJson(self: Self, comptime T: type, json_str: []u8) !ParsedResult(T) {
         std.log.debug("Json received json: {s}", .{json_str});
-        const parsed = try std.json.parseFromSlice(Result(T), self.allocator, json_str, .{});
-        // catch |e| {
-        //     std.log.err("Error on json parsing: {any}", .{e});
-        //     return e;
-        // };
-        defer parsed.deinit();
+        var parsed = std.json.parseFromSlice(Result(T), self.allocator, json_str, .{}) catch |e| {
+            std.log.err("Error on json parsing: {any}", .{e});
+            return e;
+        };
 
         if (!parsed.value.ok) {
             std.log.err("Telegram Bot API error. Code: {d}. Description: {s}", .{ parsed.value.error_code.?, parsed.value.description.? });
-            return api_error.fromErrorCode(parsed.value.error_code.?, parsed.value.description.?);
+            // Create error from parsed and then free parsed and return err to avoid leak
+            const err = api_error.fromErrorCode(parsed.value.error_code.?, parsed.value.description.?);
+            parsed.deinit();
+            return err;
         } else {
-            return ParsedResult(T).init(self.allocator, parsed.value, json_str);
+            return ParsedResult(T).init(self.allocator, parsed, json_str, parsed.value.result.?);
         }
     }
 
