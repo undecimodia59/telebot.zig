@@ -44,6 +44,5 @@ pub const SendMessageParameters = struct {
 
     /// Additional interface options. A JSON-serialized object for an inline keyboard,
     /// custom reply keyboard, instructions to remove a reply keyboard or to force a reply from the user
-    /// TODO: Make ReplyMarkup union to be passed into this
     reply_markup: ?[]u8 = null,
 };

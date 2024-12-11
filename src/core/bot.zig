@@ -50,6 +50,26 @@ pub const Bot = struct {
         return try self.innerWithBody([]types.MessageId, params.forwardMessagesParams, "forwardMessages", options);
     }
 
+    /// Use this method to copy messages of any kind. Service messages, paid media messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied.
+    /// A quiz poll can be copied only if the value of the field correct_option_id is known to the bot.
+    /// The method is analogous to the method forwardMessage, but the copied message doesn't have a link to the original message.
+    /// Returns the MessageId of the sent message on success.
+    pub fn copyMessage(self: *Self, options: params.copyMessageParams) !json.ParsedResult(types.MessageId) {
+        return try self.innerWithBody(types.MessageId, params.copyMessageParams, "copyMessage", options);
+    }
+
+    /// Use this method to send photos. On success, the sent Message is returned.
+    pub fn sendPhoto(self: *Self, options: params.sendPhotoParams) !json.ParsedResult(types.Message) {
+        return try self.innerWithBody(types.Message, params.sendPhotoParams, "sendPhoto", options);
+    }
+
+    /// Use this method to send audio files, if you want Telegram clients to display them in the music player.
+    /// Your audio must be in the .MP3 or .M4A format. On success, the sent Message is returned.
+    /// Bots can currently send audio files of up to 50 MB in size, this limit may be changed in the future.
+    pub fn sendAudio(self: *Self, options: params.sendAudioParams) !json.ParsedResult(types.Message) {
+        return try self.innerWithBody(types.Message, params.sendAudioParams, "sendAudio", options);
+    }
+
     // Private methods
 
     fn inner(self: *Self, comptime T: type, method: []const u8) !json.ParsedResult(T) {
@@ -57,6 +77,8 @@ pub const Bot = struct {
         defer self.allocator.free(url);
 
         const response_json = try self.baseRequest(url, null);
+
+        errdefer self.allocator.free(response_json);
 
         const result = try self.jsonifier.ObjectFromJson(T, response_json);
         return result;
@@ -72,6 +94,8 @@ pub const Bot = struct {
         defer self.allocator.free(body_json);
 
         const response_json = try self.baseRequest(url, body_json);
+
+        errdefer self.allocator.free(response_json);
 
         const result = try self.jsonifier.ObjectFromJson(T, response_json);
         return result;
