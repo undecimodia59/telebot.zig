@@ -2,7 +2,7 @@ const types = @import("../../types/types.zig");
 const MessageEntity = types.MessageEntity;
 const ReplyParameters = types.ReplyParameters;
 
-pub const SendAudioParameters = struct {
+pub const SendVideoParameters = struct {
     /// Unique identifier of the business connection on behalf of which the message will be sent.
     business_connection_id: ?[]const u8 = null,
 
@@ -12,37 +12,44 @@ pub const SendAudioParameters = struct {
     /// Unique identifier for the target message thread (topic) of the forum; for forum supergroups only.
     message_thread_id: ?i64 = null,
 
-    /// Audio file to send. Pass a file_id as String to send an audio file that exists on the Telegram servers
-    /// (recommended), pass an HTTP URL as a String for Telegram to get an audio file from the Internet, or
-    /// upload a new one using multipart/form-data. More information on Sending Files.
-    /// TODO: Currently avaliable only string. Need solution to fix
-    audio: []const u8,
+    /// Video to send. Pass a file_id as String to send a video that exists on the Telegram servers (recommended),
+    /// pass an HTTP URL as a String for Telegram to get a video from the Internet, or upload a new video using
+    /// multipart/form-data. More information on Sending Files.
+    video: []const u8,
 
-    /// Audio caption, 0-1024 characters after entities parsing.
+    /// Duration of sent video in seconds.
+    duration: ?i64 = null,
+
+    /// Video width.
+    width: ?i64 = null,
+
+    /// Video height.
+    height: ?i64 = null,
+
+    /// Thumbnail of the file sent; can be ignored if thumbnail generation for the file is supported server-side.
+    /// The thumbnail should be in JPEG format and less than 200 kB in size. A thumbnail's width and height should
+    /// not exceed 320. Ignored if the file is not uploaded using multipart/form-data. Thumbnails can't be reused
+    /// and can only be uploaded as a new file, so you can pass “attach://<file_attach_name>” if the thumbnail
+    /// was uploaded using multipart/form-data under <file_attach_name>. More information on Sending Files.
+    // thumbnail: ?anytype = null,
+
+    /// Video caption (may also be used when resending videos by file_id), 0-1024 characters after entities parsing.
     caption: ?[]const u8 = null,
 
-    /// Mode for parsing entities in the audio caption. See formatting options for more details.
+    /// Mode for parsing entities in the video caption. See formatting options for more details.
     parse_mode: ?[]const u8 = null,
 
     /// A JSON-serialized list of special entities that appear in the caption, which can be specified instead of parse_mode.
     caption_entities: ?[]MessageEntity = null,
 
-    /// Duration of the audio in seconds.
-    duration: ?i64 = null,
+    /// Pass True, if the caption must be shown above the message media.
+    show_caption_above_media: ?bool = null,
 
-    /// Performer of the audio.
-    performer: ?[]const u8 = null,
+    /// Pass True if the video needs to be covered with a spoiler animation.
+    has_spoiler: ?bool = null,
 
-    /// Track name of the audio.
-    title: ?[]const u8 = null,
-
-    /// Thumbnail of the file sent; can be ignored if thumbnail generation for the file is supported server-side.
-    /// The thumbnail should be in JPEG format and less than 200 kB in size. A thumbnail's width and height should
-    /// not exceed 320. Ignored if the file is not uploaded using multipart/form-data. Thumbnails can't be reused
-    /// and can be only uploaded as a new file, so you can pass “attach://<file_attach_name>” if the thumbnail
-    /// was uploaded using multipart/form-data under <file_attach_name>. More information on Sending Files.
-    /// TODO: Currently not supported.
-    //thumbnail: ?void = null,
+    /// Pass True if the uploaded video is suitable for streaming.
+    supports_streaming: ?bool = null,
 
     /// Sends the message silently. Users will receive a notification with no sound.
     disable_notification: ?bool = null,

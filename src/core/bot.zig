@@ -70,8 +70,42 @@ pub const Bot = struct {
         return try self.innerWithBody(types.Message, params.sendAudioParams, "sendAudio", options);
     }
 
-    // Private methods
+    /// Use this method to send general files. On success, the sent Message is returned.
+    pub fn sendDocument(self: *Self, options: params.sendDocumentParams) !json.ParsedResult(types.Message) {
+        return try self.innerWithBody(types.Message, params.sendDocumentParams, "sendDocumetn", options);
+    }
 
+    /// Use this method to send video files, Telegram clients support MPEG4 videos (other formats may be sent as Document).
+    /// On success, the sent Message is returned
+    pub fn sendVideo(self: *Self, options: params.sendVideoParams) !json.ParsedResult(types.Message) {
+        return try self.innerWithBody(types.Message, params.sendVideoParams, "sendVideo", options);
+    }
+
+    /// Use this method to send animation files (GIF or H.264/MPEG-4 AVC video without sound).
+    /// On success, the sent Message is returned
+    pub fn sendAnimation(self: *Self, options: params.sendAnimationParams) !json.ParsedResult(types.Message) {
+        return try self.innerWithBody(types.Message, params.sendAnimationParams, "sendAnimation", options);
+    }
+
+    /// Use this method to send audio files, if you want Telegram clients to display the file as a playable voice message.
+    /// For this to work, your audio must be in an .OGG file encoded with OPUS, or in .MP3 format, or in .M4A format (other formats may be sent as Audio or Document).
+    /// On success, the sent Message is returned
+    pub fn sendVoice(self: *Self, options: params.sendVoiceParams) !json.ParsedResult(types.Message) {
+        return try self.innerWithBody(types.Message, params.sendVoiceParams, "sendVoice", options);
+    }
+
+    /// As of v.4.0, Telegram clients support rounded square MPEG4 videos of up to 1 minute long. Use this method to send video messages.
+    /// On success, the sent Message is returned.
+    pub fn sendVideoNote(self: *Self, options: params.sendVideoNoteParams) !json.ParsedResult(types.Message) {
+        return try self.innerWithBody(types.Message, params.sendVideoNoteParams, "sendVideoNote", options);
+    }
+
+    /// Use this method to send paid media. On success, the sent Message is returned.
+    pub fn sendPaidMedia(self: *Self, options: params.sendPaidMediaParams) !json.ParsedResult(types.Message) {
+        return try self.innerWithBody(types.Message, params.sendPaidMediaParams, "sendPaidMedia", options);
+    }
+
+    // Private methods
     fn inner(self: *Self, comptime T: type, method: []const u8) !json.ParsedResult(T) {
         const url = try self.buildUrl(method);
         defer self.allocator.free(url);
