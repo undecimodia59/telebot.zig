@@ -58,7 +58,6 @@ pub const InputMedia = @import("InputMedia.zig").InputMedia;
 pub const InputPaidMedia = @import("InputPaidMedia.zig").InputPaidMedia;
 pub const InputPollOption = @import("InputPollOption.zig").InputPollOption;
 pub const Invoice = @import("Invoice.zig").Invoice;
-pub const keyboard = @import("keyboard").keyboard;
 pub const LinkPreviewOptions = @import("LinkPreviewOptions.zig").LinkPreviewOptions;
 pub const Location = @import("Location.zig").Location;
 pub const LoginUrl = @import("LoginUrl.zig").LoginUrl;

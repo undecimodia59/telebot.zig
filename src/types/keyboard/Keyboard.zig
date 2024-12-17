@@ -1,4 +1,5 @@
 pub const InlineKeyboardMarkup = @import("InlineKeyboardMarkup.zig").InlineKeyboardMarkup;
+pub const InlineKeyboardMarkupBuilder = @import("InlineKeyboardMarkup.zig").InlineKeyboardMarkupBuilder;
 pub const InlineKeyboardButton = @import("InlineKeyboardButton.zig").InlineKeyboardButton;
 pub const CopyTextButton = @import("CopyTextButton.zig").CopyTextButton;
 

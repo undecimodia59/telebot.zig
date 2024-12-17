@@ -4,6 +4,10 @@ const cfg = @import("config.zig");
 const TOKEN = cfg.TOKEN;
 const TEST_RECEIVER = cfg.TEST_RECEIVER;
 
+const Keyboard = @import("types/types.zig").Keyboard;
+const InlineKeyboardMarkup = Keyboard.InlineKeyboardMarkup;
+const InlineKeyboardButton = Keyboard.InlineKeyboardButton;
+
 pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer {
