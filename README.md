@@ -67,29 +67,6 @@ fn forwardTestMessage(bot: *Bot) !void {
 }
 ```
 
-#### Forward multiple messages:
-```zig
-/// This method whill send two different messages
-/// and then forward both of them
-fn forwardTestMessages(bot: *Bot) !void {
-    var m_ids: [2]i64 = undefined;
-    var msg1 = try bot.sendMessage(.{ .chat_id = TEST_RECEIVER, .text = "MSG1" });
-    defer msg1.deinit();
-    m_ids[0] = msg1.data.message_id;
-
-    var msg2 = try bot.sendMessage(.{ .chat_id = TEST_RECEIVER, .text = "MSG2" });
-    defer msg2.deinit();
-    m_ids[1] = msg2.data.message_id;
-
-    var forwarded = try bot.forwardMessages(.{ .chat_id = TEST_RECEIVER, .message_ids = &m_ids, .from_chat_id = TEST_RECEIVER });
-    defer forwarded.deinit();
-
-    for (forwarded.data, 0..) |mid, i| {
-        std.debug.print("{d} + 2 == {d} \n", .{ m_ids[i], mid.message_id });
-    }
-}
-```
-
 #### Copy message:
 ```zig
 /// Will send message and then copy it to the same chat
@@ -124,24 +101,34 @@ fn sendTestPhoto(bot: *Bot) !void {
 }
 ```
 
-#### Send audio:
+#### Using inline keyboard:
 ```zig
-/// Sending audio by url, then extract file_id and send again by file_id with caption and parse_mode
-fn sendTestAudio(bot: *Bot) !void {
-    // Random site with 'Feliz Navidad' song
-    const AUDIO_URL = "https://cdn.trendybeatz.com/audio/Ayisi-Feliz-Navidad-(TrendyBeatz.com).mp3";
-    var msg = try bot.sendAudio(.{ .chat_id = TEST_RECEIVER, .audio = AUDIO_URL });
-    defer msg.deinit();
+// Imports here
 
-    const file_id = msg.data.audio.?.file_id;
-    // Send via file_id
-    var m = try bot.sendAudio(.{ .chat_id = TEST_RECEIVER, .audio = file_id, .caption = "AUDIO WITH CAPTION!" });
-    m.deinit();
-    var m2 = try bot.sendAudio(.{ .chat_id = TEST_RECEIVER, .audio = file_id, .caption = "*AUDIO* WITH CAPTION AND _PARSE MODE_!", .parse_mode = "Markdown" });
-    m2.deinit();
+pub fn main() !void {
+    var bot = Bot.init(std.heap.page_allocator, TOKEN);
+    defer bot.deinit();
+    var inlineKb = try buildKeyboard(std.heap.page_allocator);
+    const json = try inlineKb.toReplyMarkup();
+    defer std.heap.page_allocator.free(json);
+
+    var m = try bot.sendMessage(.{ .chat_id = TEST_RECEIVER, .text = "Testing keyboard!", .reply_markup = json });
+    defer m.deinit();
+}
+
+fn buildKeyboard(allocator: std.mem.Allocator) !InlineKeyboardMarkup {
+    var inlineKb = InlineKeyboardMarkup.init(allocator);
+    try inlineKb.addRow(&[_]InlineKeyboardButton{
+        .{ .text = "Row 1 Button 1", .callback_data = "callback" },
+        .{ .text = "Row 1 Button 2", .url = "https://duckduckgo.com/" },
+    });
+    try inlineKb.addRow(&[_]InlineKeyboardButton{
+        .{ .text = "Row 2 Button 1", .web_app = .{ .url = "https://spreadprivacy.com/" } },
+    });
+    return inlineKb;
 }
 ```
-> And more methods avaliable in this lib
+> And more methods avaliable in this lib (Most of them works similar)
 ---
 ## TODO:
 - [x] TelegramBotAPI Types

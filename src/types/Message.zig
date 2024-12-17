@@ -21,7 +21,7 @@ const Game = @import("Game.zig").Game;
 const Poll = @import("Poll.zig").Poll;
 const Venue = @import("Venue.zig").Venue;
 const Location = @import("Location.zig").Location;
-const InlineKeyboardMarkup = @import("keyboard/Keyboard.zig").InlineKeyboardMarkup;
+const InnerInlineMarkup = @import("keyboard/Keyboard.zig").InnerInlineMarkup;
 const WebAppData = @import("WebAppData.zig").WebAppData;
 const ForumTopicClosed = @import("ForumTopicClosed.zig").ForumTopicClosed;
 const LinkPreviewOptions = @import("LinkPreviewOptions.zig").LinkPreviewOptions;
@@ -136,7 +136,7 @@ pub const Message = struct {
     video_chat_ended: ?VideoChatEnded = null,
     video_chat_participants_invited: ?VideoChatParticipantsInvited = null,
     web_app_data: ?WebAppData = null,
-    reply_markup: ?InlineKeyboardMarkup = null,
+    reply_markup: ?InnerInlineMarkup = null,
     forward_from: ?User = null,
     forward_date: ?i32 = null,
 };

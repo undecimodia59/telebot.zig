@@ -33,4 +33,4 @@ pub const InlineKeyboardMarkup = struct {
     }
 };
 
-const InnerInlineMarkup = struct { inline_keyboard: [][]const InlineKeyboardButton };
+pub const InnerInlineMarkup = struct { inline_keyboard: [][]const InlineKeyboardButton };
