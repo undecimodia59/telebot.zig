@@ -2,35 +2,50 @@ const std = @import("std");
 const InlineKeyboardButton = @import("InlineKeyboardButton.zig").InlineKeyboardButton;
 const json = @import("../../json/parser.zig");
 
-const InlineKeyboard = std.ArrayList([]const InlineKeyboardButton);
-
-/// Struct representing an inline keyboard markup.
 pub const InlineKeyboardMarkup = struct {
-    inner: ?InnerInlineMarkup = null,
-    kb: InlineKeyboard,
-    allocator: std.mem.Allocator,
+    inline_keyboard: [][]const InlineKeyboardButton,
 
-    const Self = @This();
-
-    pub fn init(allocator: std.mem.Allocator) Self {
-        return Self{ .kb = InlineKeyboard.init(allocator), .allocator = allocator };
-    }
-
-    /// Deinit inline_keyboard and return json that's need to be deallocated
-    pub fn toReplyMarkup(self: *Self) ![]u8 {
-        const kb = try self.kb.toOwnedSlice();
-        defer {
-            self.kb.deinit();
-            self.allocator.free(kb);
+    /// This method also calls deinit
+    pub fn toReplyMarkup(self: *InlineKeyboardMarkup, allocator: std.mem.Allocator) ![]u8 {
+        std.debug.print("In toReplyMarkup:\n", .{});
+        for (self.inline_keyboard) |row| {
+            for (row) |btn| {
+                std.debug.print("\t{s} | {?s} | {?s}\n", .{ btn.text, btn.callback_data, btn.url });
+            }
         }
 
-        const jsonifier = json.Jsonifier.init(self.allocator);
-        return try jsonifier.JsonFromObject(InnerInlineMarkup, .{ .inline_keyboard = kb });
+        // Clean duped rows
+        defer self.deinit(allocator);
+
+        const jsonifier = json.Jsonifier.init(allocator);
+        return jsonifier.JsonFromObject(InlineKeyboardMarkup, self.*);
     }
 
-    pub fn addRow(self: *Self, row: []const InlineKeyboardButton) !void {
-        try self.kb.append(row);
+    pub fn deinit(self: *InlineKeyboardMarkup, allocator: std.mem.Allocator) void {
+        for (self.inline_keyboard) |row| {
+            allocator.free(row);
+        }
+        allocator.free(self.inline_keyboard);
     }
 };
 
-pub const InnerInlineMarkup = struct { inline_keyboard: [][]const InlineKeyboardButton };
+/// Struct representing an inline keyboard markup.
+pub const InlineKeyboardMarkupBuilder = struct {
+    const Self = @This();
+    kb: std.ArrayList([]const InlineKeyboardButton),
+    allocator: std.mem.Allocator,
+
+    pub fn init(allocator: std.mem.Allocator) Self {
+        return Self{ .kb = std.ArrayList([]const InlineKeyboardButton).init(allocator), .allocator = allocator };
+    }
+
+    /// Deinit inline_keyboard and return markup that should call either deinit or toReplyMarkup
+    pub fn build(self: *Self) !InlineKeyboardMarkup {
+        const keyboard = try self.kb.toOwnedSlice();
+        return InlineKeyboardMarkup{ .inline_keyboard = keyboard };
+    }
+
+    pub fn addRow(self: *Self, row: []const InlineKeyboardButton) !void {
+        try self.kb.append(try self.allocator.dupe(InlineKeyboardButton, row));
+    }
+};
