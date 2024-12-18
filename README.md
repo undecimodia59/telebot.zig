@@ -103,29 +103,40 @@ fn sendTestPhoto(bot: *Bot) !void {
 
 #### Using inline keyboard:
 ```zig
-// Imports here
+const Keyboard = @import("types/types.zig").Keyboard;
+const InlineKeyboardMarkup = Keyboard.InlineKeyboardMarkup;
+const InlineBuilder = Keyboard.InlineKeyboardMarkupBuilder;
+const InlineKeyboardButton = Keyboard.InlineKeyboardButton;
 
 pub fn main() !void {
-    var bot = Bot.init(std.heap.page_allocator, TOKEN);
-    defer bot.deinit();
-    var inlineKb = try buildKeyboard(std.heap.page_allocator);
-    const json = try inlineKb.toReplyMarkup();
-    defer std.heap.page_allocator.free(json);
+    const allocator = std.heap.page_allocator;
 
-    var m = try bot.sendMessage(.{ .chat_id = TEST_RECEIVER, .text = "Testing keyboard!", .reply_markup = json });
+    var bot = Bot.init(allocator, TOKEN);
+    defer bot.deinit();
+    var inlineKb = try buildKeyboard(allocator);
+    const json = try inlineKb.toReplyMarkup(allocator);
+    defer allocator.free(json);
+
+    var m = try bot.sendMessage(.{ .chat_id = TEST_RECEIVER, .text = "Testing keyboard that sent with telebot.zig!", .reply_markup = json });
     defer m.deinit();
 }
 
 fn buildKeyboard(allocator: std.mem.Allocator) !InlineKeyboardMarkup {
-    var inlineKb = InlineKeyboardMarkup.init(allocator);
-    try inlineKb.addRow(&[_]InlineKeyboardButton{
-        .{ .text = "Row 1 Button 1", .callback_data = "callback" },
+    var builder = InlineBuilder.init(allocator);
+
+    const dynamic_value: []const u8 = std.mem.span(std.os.argv[0]);
+
+    const row1 = &[_]InlineKeyboardButton{
+        .{ .text = "Row 1 Button 1", .callback_data = dynamic_value },
         .{ .text = "Row 1 Button 2", .url = "https://duckduckgo.com/" },
-    });
-    try inlineKb.addRow(&[_]InlineKeyboardButton{
+    };
+    const row2 = &[_]InlineKeyboardButton{
         .{ .text = "Row 2 Button 1", .web_app = .{ .url = "https://spreadprivacy.com/" } },
-    });
-    return inlineKb;
+    };
+
+    try builder.addRow(row1);
+    try builder.addRow(row2);
+    return builder.build();
 }
 ```
 > And more methods avaliable in this lib (Most of them works similar)
