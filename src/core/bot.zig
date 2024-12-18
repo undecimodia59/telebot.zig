@@ -105,6 +105,11 @@ pub const Bot = struct {
         return try self.innerWithBody(types.Message, params.sendPaidMediaParams, "sendPaidMedia", options);
     }
 
+    /// Use this method to receive incoming updates using long polling. Returns an Array of Update objects
+    pub fn getUpdates(self: *Self, options: params.getUpdatesParams) !json.ParsedResult([]types.Update) {
+        return try self.innerWithBody([]types.Update, params.getUpdatesParams, "getUpdates", options);
+    }
+
     // Private methods
     fn inner(self: *Self, comptime T: type, method: []const u8) !json.ParsedResult(T) {
         const url = try self.buildUrl(method);

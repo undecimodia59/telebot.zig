@@ -10,3 +10,4 @@ pub const sendAnimationParams = @import("send_animation.zig").SendAnimationParam
 pub const sendVoiceParams = @import("send_voice.zig").SendVoiceParameters;
 pub const sendVideoNoteParams = @import("send_video_note.zig").SendVideoNoteParameters;
 pub const sendPaidMediaParams = @import("send_paid_media.zig").SendPaidMediaParameters;
+pub const getUpdatesParams = @import("get_updates.zig").GetUpdatesParameters;

@@ -15,4 +15,15 @@ pub fn main() !void {
 
     var bot = Bot.init(gpa.allocator(), TOKEN);
     defer bot.deinit();
+
+    var updates = try bot.getUpdates(.{});
+    defer updates.deinit();
+    for (updates.data) |update| {
+        if (update.message) |msg| {
+            std.debug.print(
+                "Received message №{d} ({d}) from {s} with text: {?s}\n",
+                .{ msg.message_id, update.update_id, msg.from.?.first_name, msg.text },
+            );
+        }
+    }
 }

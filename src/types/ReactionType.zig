@@ -1,25 +1,10 @@
-const ReactionType = union(enum) {
-    /// The reaction is based on an emoji
-    ReactionTypeEmoji: struct {
-        /// Type of the reaction, always “emoji”
-        type: []const u8 = "emoji",
+pub const ReactionType = struct {
+    /// Type of the reaction: "emoji", "custom_emoji", "paid"
+    type: []const u8,
 
-        /// Reaction emoji
-        emoji: []const u8, // Currently, it can be one of a predefined set of emojis
-    },
+    /// If type "emoji"
+    emoji: ?[]const u8 = null,
 
-    /// The reaction is based on a custom emoji
-    ReactionTypeCustomEmoji: struct {
-        /// Type of the reaction, always “custom_emoji”
-        type: []const u8 = "custom_emoji",
-
-        /// Custom emoji identifier
-        custom_emoji_id: []const u8,
-    },
-
-    /// The reaction is paid
-    ReactionTypePaid: struct {
-        /// Type of the reaction, always “paid”
-        type: []const u8 = "paid",
-    },
+    /// If type "custom_emoji"
+    custom_emoji_id: []const u8,
 };
