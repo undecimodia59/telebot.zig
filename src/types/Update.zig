@@ -19,6 +19,14 @@ const ShippingQuery = @import("payments/ShippingQuery.zig").ShippingQuery;
 const PreCheckoutQuery = @import("payments/PreCheckoutQuery.zig").PreCheckoutQuery;
 const PaidMediaPurchased = @import("payments/PaidMediaPurchased.zig").PaidMediaPurchased;
 
+const Bot = @import("../core/bot.zig").Bot;
+const ApiError = @import("../core/error.zig").ApiError;
+
+const params = @import("../core/parameters/parameters.zig");
+const json = @import("../json/parser.zig");
+
+const UpdateRaw = @import("UpdateRaw.zig").UpdateRaw;
+
 /// This object represents an incoming update.
 /// At most one of the optional parameters can be present in any given update.
 pub const Update = struct {
@@ -105,4 +113,92 @@ pub const Update = struct {
 
     /// A boost was removed from a chat. The bot must be an administrator in the chat to receive these updates.
     removed_chat_boost: ?ChatBoostRemoved = null,
+
+    /// Pointer to bot, if received not in router WILL BE NULLPOINTER!
+    /// Use this field only in router!
+    _bot: ?*Bot = null,
+
+    /// You can set .chat_id to 0 and it will be automatically based on update
+    pub fn reply(self: Update, options: params.sendMessageParams) !json.ParsedResult(Message) {
+        options.chat_id = self.getUpdateDialog();
+        return try self._bot.?.sendMessage(options);
+    }
+
+    fn getUpdateDialog(self: Update) ApiError!i64 {
+        if (self.message) |m| {
+            return m.chat.id;
+        } else if (self.edited_message) |m| {
+            return m.chat.id;
+        } else if (self.channel_post) |m| {
+            return m.chat.id;
+        } else if (self.edited_channel_post) |m| {
+            return m.chat.id;
+        } else if (self.business_connection) |c| {
+            return c.user.id;
+        } else if (self.edited_business_message) |m| {
+            return m.chat.id;
+        } else if (self.deleted_business_messages) |bmd| {
+            return bmd.chat.id;
+        } else if (self.message_reaction) |r| {
+            return r.chat.id;
+        } else if (self.message_reaction_count) |rc| {
+            return rc.chat.id;
+        } else if (self.inline_query) |iq| {
+            return iq.from.id;
+        } else if (self.chosen_inline_result) |cir| {
+            return cir.from.id;
+        } else if (self.callback_query) |cq| {
+            return cq.from.id; // TODO: Change to cq.message.?
+        } else if (self.shipping_query) |sq| {
+            return sq.from.id;
+        } else if (self.pre_checkout_query) |pcq| {
+            return pcq.from.id;
+        } else if (self.purchased_paid_media) |ppm| {
+            return ppm.from.id;
+        } else if (self.poll) {
+            return ApiError.UpdateReplyError;
+        } else if (self.poll_answer) |pa| {
+            return if (pa.voter_chat) |chat| chat.id else ApiError.UpdateReplyError;
+        } else if (self.my_chat_member) |mcm| {
+            return mcm.chat.id;
+        } else if (self.chat_member) |cm| {
+            return cm.chat.id;
+        } else if (self.chat_join_request) |cjr| {
+            return cjr.user_chat_id;
+        } else if (self.chat_boost) |cb| {
+            return cb.chat.id;
+        } else if (self.removed_chat_boost) |rcb| {
+            return rcb.chat.id;
+        }
+    }
+    /// Initialize Update from UpdateRaw and Bot
+    pub fn fromRaw(raw: UpdateRaw, bot: *Bot) Update {
+        return Update{
+            .update_id = raw.update_id,
+            .message = raw.message,
+            .edited_message = raw.edited_message,
+            .channel_post = raw.channel_post,
+            .edited_channel_post = raw.edited_channel_post,
+            .business_connection = raw.business_connection,
+            .business_message = raw.business_message,
+            .edited_business_message = raw.edited_business_message,
+            .deleted_business_messages = raw.deleted_business_messages,
+            .message_reaction = raw.message_reaction,
+            .message_reaction_count = raw.message_reaction_count,
+            .inline_query = raw.inline_query,
+            .chosen_inline_result = raw.chosen_inline_result,
+            .callback_query = raw.callback_query,
+            .shipping_query = raw.shipping_query,
+            .pre_checkout_query = raw.pre_checkout_query,
+            .purchased_paid_media = raw.purchased_paid_media,
+            .poll = raw.poll,
+            .poll_answer = raw.poll_answer,
+            .my_chat_member = raw.my_chat_member,
+            .chat_member = raw.chat_member,
+            .chat_join_request = raw.chat_join_request,
+            .chat_boost = raw.chat_boost,
+            .removed_chat_boost = raw.removed_chat_boost,
+            ._bot = bot,
+        };
+    }
 };

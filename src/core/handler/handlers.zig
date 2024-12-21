@@ -1,41 +1,11 @@
-const Update = @import("../types/Update.zig").Update;
-const ApiError = @import("error.zig").ApiError;
+const Update = @import("../../types/Update.zig").Update;
+const ApiError = @import("../error.zig").ApiError;
+const HandlingType = @import("handling_type.zig").HandlingType;
 
-const EnumValue = i32;
-
-/// This type used for bot.registerHandler()
-pub const HandlingType = enum(EnumValue) {
-    ANY,
-    EditedMessage,
-    ChannelPost,
-    EditedChannelPost,
-    BusinessConnection,
-    BusinessMessage,
-    EditedBusinessMessage,
-    DeletedBusinessMessages,
-    MessageReaction,
-    MessageReactionCount,
-    InlineQuery,
-    ChoosenInlineResult,
-    CallbackQuery,
-    ShippingQuery,
-    PreCheckoutQuery,
-    PurchasedPaidMedia,
-    Poll,
-    PollAnswer,
-    MyChatMember,
-    ChatMember,
-    ChatJoinRequest,
-    ChatBoost,
-    RemovedChatBoost,
-    MessageText,
-    MessagePhoto,
-    MessageCommand,
-};
-
-pub const RouterFnType = *const fn (Update) ApiError!void;
-
-const TypesAmount = @typeInfo(HandlingType).Enum.fields.len;
+const handling_values = @import("handling_values.zig");
+const TypesAmount = handling_values.TypesAmount;
+const RouterFnType = handling_values.RouterFnType;
+const EnumValue = handling_values.EnumValue;
 
 pub const Router = struct {
     handlers: [TypesAmount]?RouterPair = [_]?RouterPair{null} ** TypesAmount,
@@ -73,7 +43,7 @@ pub const Router = struct {
     pub fn get(self: Self, needle: HandlingType) ?RouterFnType {
         for (self.handlers) |pair| {
             if (pair) |h| {
-                if (h.hType == @intFromEnum(needle)) {
+                if (h.hType == @intFromEnum(needle) or h.hType == @intFromEnum(HandlingType.ANY)) {
                     return h.hFn;
                 }
             }

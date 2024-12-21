@@ -80,7 +80,6 @@ pub const PassportFile = @import("PassportFile.zig").PassportFile;
 pub const PhotoSize = @import("PhotoSize.zig").PhotoSize;
 pub const PollAnswer = @import("PollAnswer.zig").PollAnswer;
 pub const PollOption = @import("PollOption.zig").PollOption;
-pub const PollType = @import("PollType.zig").PollType;
 pub const Poll = @import("Poll.zig").Poll;
 pub const ProximityAlertTriggered = @import("ProximityAlertTriggered.zig").ProximityAlertTriggered;
 pub const ReactionCount = @import("ReactionCount.zig").ReactionCount;

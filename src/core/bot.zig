@@ -2,8 +2,9 @@ const std = @import("std");
 const types = @import("../types/types.zig");
 const params = @import("parameters/parameters.zig");
 const json = @import("../json/parser.zig");
-const Router = @import("handlers.zig").Router;
+const Router = @import("handler/handlers.zig").Router;
 const HTTP = @import("../http/client.zig").HTTP;
+const Poller = @import("polling/poller.zig").Poller;
 const ArrayList = std.ArrayList;
 
 const BASE_API_URL = "https://api.telegram.org/bot";
@@ -116,13 +117,25 @@ pub const Bot = struct {
     // Inner polling logic
 
     /// Start long poling
-    pub fn longPolling(self: *Self) !void {
-        _ = self;
+    /// Big `workers_amount` can cause undefined behaivor, so MAX = 32
+    /// `stop_on_error` if true will return an error, if false just log error and continue
+    /// to run with skipping update that caused an error
+    /// `timeout` in seconds
+    pub fn longPolling(self: *Self, workers_amount: u8, timeout: u64, stop_on_error: bool) !void {
+        if (!self.router) {
+            @panic("Router can't be null when using longPolling");
+        }
+        var poller = Poller.init(self, workers_amount, timeout, stop_on_error, self.allocator);
+        try poller.poll_loop();
     }
 
     /// Use this method to receive incoming updates using long polling. Returns an Array of Update objects
-    fn getUpdates(self: *Self, options: params.getUpdatesParams) !json.ParsedResult([]types.Update) {
-        return try self.innerWithBody([]types.Update, params.getUpdatesParams, "getUpdates", options);
+    pub fn getUpdates(self: *Self, options: params.getUpdatesParams) !json.ParsedResult([]types.Update) {
+        const updates = try self.innerWithBody([]types.Update, params.getUpdatesParams, "getUpdates", options);
+        for (updates.data) |*u| {
+            u._bot = self;
+        }
+        return updates;
     }
 
     // Private methods

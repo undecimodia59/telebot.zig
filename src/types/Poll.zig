@@ -1,7 +1,6 @@
 const std = @import("std");
 const MessageEntity = @import("MessageEntity.zig").MessageEntity;
 const PollOption = @import("PollOption.zig").PollOption;
-const PollType = @import("PollType.zig").PollType;
 
 /// Struct representing a poll.
 pub const Poll = struct {
@@ -27,7 +26,7 @@ pub const Poll = struct {
     is_anonymous: bool,
 
     /// Poll type, currently can be “regular” or “quiz”.
-    type: PollType,
+    type: []const u8,
 
     /// True, if the poll allows multiple answers.
     allows_multiple_answers: bool,

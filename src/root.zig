@@ -2,9 +2,8 @@ pub const Bot = @import("core/bot.zig").Bot;
 pub const types = @import("types/types.zig");
 pub const Update = types.Update;
 pub const ApiError = @import("core/error.zig").ApiError;
-const handlers = @import("core/handlers.zig");
-pub const HandlerType = handlers.HandlingType;
-pub const Router = handlers.Router;
+pub const HandlingType = @import("core/handler/handling_type.zig").HandlingType;
+pub const Router = @import("core/handler/handlers.zig").Router;
 
 // TODO: Delete this
 pub const cfg = @import("config.zig");
