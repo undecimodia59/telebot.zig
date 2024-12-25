@@ -30,6 +30,8 @@ pub fn main() !void {
 fn getUpdates(bot: *Bot, skip_updates: bool) !void {
     var last_update_id: i64 = 0;
 
+    std.debug.print("Skip updates?: {}\n", .{skip_updates});
+
     if (skip_updates) {
         var resp = try bot.getUpdates(.{});
         defer resp.deinit();
@@ -50,11 +52,7 @@ fn getUpdates(bot: *Bot, skip_updates: bool) !void {
         for (resp.data) |update| {
             if (update.message) |msg| {
                 std.debug.print("Got update message\n", .{});
-                var m = try bot.copyMessage(.{
-                    .chat_id = msg.chat.id,
-                    .from_chat_id = msg.chat.id,
-                    .message_id = msg.message_id,
-                });
+                var m = try update.reply(.{ .chat_id = 0, .text = msg.text orelse "No text(" });
                 m.deinit();
             }
             last_update_id = update.update_id + 1;

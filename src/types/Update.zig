@@ -1,3 +1,5 @@
+const std = @import("std");
+
 const types = @import("types.zig");
 const Message = types.Message;
 const BusinessConnection = types.BusinessConnection;
@@ -119,9 +121,13 @@ pub const Update = struct {
     _bot: ?*Bot = null,
 
     /// You can set .chat_id to 0 and it will be automatically based on update
+    /// TODO: Rewrite to params.replyParams
     pub fn reply(self: Update, options: params.sendMessageParams) !json.ParsedResult(Message) {
-        options.chat_id = self.getUpdateDialog();
-        return try self._bot.?.sendMessage(options);
+        var opts = options;
+        opts.chat_id = self.getUpdateDialog() catch {
+            @panic("Found type that doesn't support reply!");
+        };
+        return try self._bot.?.sendMessage(opts);
     }
 
     fn getUpdateDialog(self: Update) ApiError!i64 {
@@ -155,7 +161,7 @@ pub const Update = struct {
             return pcq.from.id;
         } else if (self.purchased_paid_media) |ppm| {
             return ppm.from.id;
-        } else if (self.poll) {
+        } else if (self.poll) |_| {
             return ApiError.UpdateReplyError;
         } else if (self.poll_answer) |pa| {
             return if (pa.voter_chat) |chat| chat.id else ApiError.UpdateReplyError;
@@ -169,8 +175,11 @@ pub const Update = struct {
             return cb.chat.id;
         } else if (self.removed_chat_boost) |rcb| {
             return rcb.chat.id;
+        } else {
+            unreachable;
         }
     }
+
     /// Initialize Update from UpdateRaw and Bot
     pub fn fromRaw(raw: UpdateRaw, bot: *Bot) Update {
         return Update{

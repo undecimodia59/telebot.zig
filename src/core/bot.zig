@@ -121,21 +121,25 @@ pub const Bot = struct {
     /// `stop_on_error` if true will return an error, if false just log error and continue
     /// to run with skipping update that caused an error
     /// `timeout` in seconds
-    pub fn longPolling(self: *Self, workers_amount: u8, timeout: u64, stop_on_error: bool) !void {
+    pub fn longPolling(self: *Self, workers_amount: u8, timeout: u64) !void {
         if (!self.router) {
             @panic("Router can't be null when using longPolling");
         }
-        var poller = Poller.init(self, workers_amount, timeout, stop_on_error, self.allocator);
+        var poller = Poller.init(self, workers_amount, timeout, self.allocator, self.router.?);
         try poller.poll_loop();
     }
 
     /// Use this method to receive incoming updates using long polling. Returns an Array of Update objects
-    pub fn getUpdates(self: *Self, options: params.getUpdatesParams) !json.ParsedResult([]types.Update) {
-        const updates = try self.innerWithBody([]types.Update, params.getUpdatesParams, "getUpdates", options);
-        for (updates.data) |*u| {
-            u._bot = self;
+    pub fn getUpdates(
+        self: *Self,
+        options: params.getUpdatesParams,
+    ) !types.Updates {
+        const updates_raw = try self.innerWithBody([]types.UpdateRaw, params.getUpdatesParams, "getUpdates", options);
+        var updates: []types.Update = try self.allocator.alloc(types.Update, updates_raw.data.len);
+        for (updates_raw.data, 0..) |ur, i| {
+            updates[i] = types.Update.fromRaw(ur, self);
         }
-        return updates;
+        return types.Updates{ .data = updates, .ptr = updates_raw };
     }
 
     // Private methods

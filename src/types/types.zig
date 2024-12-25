@@ -1,5 +1,7 @@
 pub const Keyboard = @import("keyboard/Keyboard.zig");
 pub const Update = @import("Update.zig").Update;
+pub const Updates = @import("Updates.zig").Updates;
+pub const UpdateRaw = @import("UpdateRaw.zig").UpdateRaw;
 pub const Animation = @import("Animation.zig").Animation;
 pub const Audio = @import("Audio.zig").Audio;
 pub const Birthdate = @import("Birthdate.zig").Birthdate;
