@@ -9,39 +9,49 @@ const ApiError = @import("../error.zig").ApiError;
 
 pub const Worker = struct {
     id: u8,
-    receiver: Channel(*Update), // Channel to receive pointers to updates
-    handle: ?std.Thread.Thread = null,
-    err_handler: *bool,
+    receiver: Channel(*const Update), // Channel to receive pointers to updates
+    handle: ?std.Thread = null,
     router: Router,
+    notify_processed: *const fn () void,
 
-    const Self = @This();
-
-    pub fn init(id: u8, allocator: std.mem.Allocator, channel_capacity: usize, router: Router) Worker {
-        const channel = Channel(*Update).init(allocator, channel_capacity);
+    pub fn init(
+        id: u8,
+        allocator: std.mem.Allocator,
+        channel_capacity: usize,
+        router: Router,
+        notify_processed: *const fn () void,
+    ) Worker {
         return Worker{
             .id = id,
-            .receiver = channel,
+            .receiver = Channel(*const Update).init(allocator, channel_capacity),
             .handle = null,
             .router = router,
+            .notify_processed = notify_processed,
         };
     }
 
-    pub fn start(self: Self) !void {
-        self.handle = std.Thread.spawn(.{}, self.poller, .{self});
+    pub fn getChannel(self: *Worker) *Channel(*const Update) {
+        return &self.receiver;
     }
 
-    fn poller(self: Self) !void {
+    pub fn start(self: *Worker) !void {
+        self.handle = try std.Thread.spawn(.{}, Worker.poller, .{self});
+    }
+
+    fn poller(worker_ptr: *Worker) !void {
         while (true) {
-            const update = self.receiver.receive();
-            if (self.get_handling_by_update(update)) |f| {
-                f(update) catch |e| {
-                    std.log.err("Error on polling: {any}", .{e});
+            const update = worker_ptr.receiver.receive();
+            if (worker_ptr.get_handling_by_update(update.*)) |handler| {
+                handler(update.*) catch |e| {
+                    std.log.err("Error on user-defined handler: {any}", .{e});
                 };
             }
+            // Notify Poller that processing is done
+            worker_ptr.notify_processed();
         }
     }
 
-    fn get_handling_by_update(self: Self, update: Update) ?fn (Update) ApiError!void {
+    fn get_handling_by_update(self: *Worker, update: Update) ?*const fn (Update) ApiError!void {
         const hType = HandlingTypeFromUpdate(update);
         return self.router.get(hType);
     }

@@ -4,6 +4,7 @@ pub const Update = types.Update;
 pub const ApiError = @import("core/error.zig").ApiError;
 pub const HandlingType = @import("core/handler/handling_type.zig").HandlingType;
 pub const Router = @import("core/handler/handlers.zig").Router;
+pub const ParsedResult = @import("json/parser.zig").ParsedResult;
 
 // TODO: Delete this
 pub const cfg = @import("config.zig");

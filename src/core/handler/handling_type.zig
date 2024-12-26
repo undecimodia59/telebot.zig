@@ -33,53 +33,62 @@ pub const HandlingType = enum(EnumValue) {
 
 pub fn HandlingTypeFromUpdate(update: Update) HandlingType {
     if (update.message) |m| {
-        // Here's find based on fields
-        _ = m;
-    } else if (update.business_connection) {
+        if (m.text) |text| {
+            if (text[0] == '/') {
+                return HandlingType.MessageCommand;
+            } else {
+                return HandlingType.MessageText;
+            }
+        } else if (m.photo) |_| {
+            return HandlingType.MessagePhoto;
+        }
+        // TODO: Complete for all message types
+        @panic("Type not supported!");
+    } else if (update.business_connection) |_| {
         return HandlingType.BusinessConnection;
-    } else if (update.business_message) {
+    } else if (update.business_message) |_| {
         return HandlingType.BusinessMessage;
-    } else if (update.callback_query) {
+    } else if (update.callback_query) |_| {
         return HandlingType.CallbackQuery;
-    } else if (update.channel_post) {
+    } else if (update.channel_post) |_| {
         return HandlingType.ChannelPost;
-    } else if (update.chat_boost) {
+    } else if (update.chat_boost) |_| {
         return HandlingType.ChatBoost;
-    } else if (update.chat_join_request) {
+    } else if (update.chat_join_request) |_| {
         return HandlingType.ChatJoinRequest;
-    } else if (update.chat_member) {
+    } else if (update.chat_member) |_| {
         return HandlingType.ChatMember;
-    } else if (update.chosen_inline_result) {
+    } else if (update.chosen_inline_result) |_| {
         return HandlingType.ChoosenInlineResult;
-    } else if (update.deleted_business_messages) {
+    } else if (update.deleted_business_messages) |_| {
         return HandlingType.DeletedBusinessMessages;
-    } else if (update.edited_business_message) {
+    } else if (update.edited_business_message) |_| {
         return HandlingType.EditedBusinessMessage;
-    } else if (update.edited_channel_post) {
+    } else if (update.edited_channel_post) |_| {
         return HandlingType.EditedChannelPost;
-    } else if (update.edited_message) {
+    } else if (update.edited_message) |_| {
         return HandlingType.EditedMessage;
-    } else if (update.inline_query) {
+    } else if (update.inline_query) |_| {
         return HandlingType.InlineQuery;
-    } else if (update.message_reaction) {
+    } else if (update.message_reaction) |_| {
         return HandlingType.MessageReaction;
-    } else if (update.message_reaction_count) {
+    } else if (update.message_reaction_count) |_| {
         return HandlingType.MessageReactionCount;
-    } else if (update.my_chat_member) {
+    } else if (update.my_chat_member) |_| {
         return HandlingType.MyChatMember;
-    } else if (update.poll) {
+    } else if (update.poll) |_| {
         return HandlingType.Poll;
-    } else if (update.poll_answer) {
+    } else if (update.poll_answer) |_| {
         return HandlingType.PollAnswer;
-    } else if (update.pre_checkout_query) {
+    } else if (update.pre_checkout_query) |_| {
         return HandlingType.PreCheckoutQuery;
-    } else if (update.purchased_paid_media) {
+    } else if (update.purchased_paid_media) |_| {
         return HandlingType.PurchasedPaidMedia;
-    } else if (update.removed_chat_boost) {
+    } else if (update.removed_chat_boost) |_| {
         return HandlingType.RemovedChatBoost;
-    } else if (update.shipping_query) {
+    } else if (update.shipping_query) |_| {
         return HandlingType.ShippingQuery;
-    } else {
-        unreachable;
     }
+
+    unreachable;
 }

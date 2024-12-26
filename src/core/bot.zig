@@ -118,15 +118,13 @@ pub const Bot = struct {
 
     /// Start long poling
     /// Big `workers_amount` can cause undefined behaivor, so MAX = 32
-    /// `stop_on_error` if true will return an error, if false just log error and continue
-    /// to run with skipping update that caused an error
-    /// `timeout` in seconds
-    pub fn longPolling(self: *Self, workers_amount: u8, timeout: u64) !void {
-        if (!self.router) {
+    /// `timeout` in ms
+    pub fn longPolling(self: *Self, workers_amount: u8, timeout: u64, skip_updates: bool, options: params.getUpdatesParams) !void {
+        if (self.router == null) {
             @panic("Router can't be null when using longPolling");
         }
-        var poller = Poller.init(self, workers_amount, timeout, self.allocator, self.router.?);
-        try poller.poll_loop();
+        var poller = try Poller.init(self, workers_amount, timeout, self.allocator, self.router.?);
+        try poller.poll_loop(skip_updates, options);
     }
 
     /// Use this method to receive incoming updates using long polling. Returns an Array of Update objects
