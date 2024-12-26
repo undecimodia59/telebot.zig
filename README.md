@@ -144,6 +144,6 @@ fn buildKeyboard(allocator: std.mem.Allocator) !InlineKeyboardMarkup {
 ## TODO:
 - [x] TelegramBotAPI Types
 - [ ] TelegramBotAPI Methods
-- [ ] Polling
+- [x] Polling
 - [ ] States
 - [ ] Fix all `TODO`

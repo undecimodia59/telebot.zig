@@ -2,7 +2,9 @@ const std = @import("std");
 const types = @import("../types/types.zig");
 const params = @import("parameters/parameters.zig");
 const json = @import("../json/parser.zig");
+const Router = @import("handler/handlers.zig").Router;
 const HTTP = @import("../http/client.zig").HTTP;
+const Poller = @import("polling/poller.zig").Poller;
 const ArrayList = std.ArrayList;
 
 const BASE_API_URL = "https://api.telegram.org/bot";
@@ -14,13 +16,20 @@ pub const Bot = struct {
     allocator: std.mem.Allocator,
     http_client: HTTP,
     jsonifier: json.Jsonifier,
+    router: ?Router,
 
     const Self = @This();
 
-    pub fn init(allocator: std.mem.Allocator, token: []const u8) Self {
+    pub fn init(allocator: std.mem.Allocator, token: []const u8, router: ?Router) Self {
         const http_client = HTTP.init(allocator);
         const jsonifier = json.Jsonifier.init(allocator);
-        return Self{ .allocator = allocator, .token = token, .http_client = http_client, .jsonifier = jsonifier };
+        return Self{
+            .allocator = allocator,
+            .token = token,
+            .http_client = http_client,
+            .jsonifier = jsonifier,
+            .router = router,
+        };
     }
     pub fn deinit(self: *Self) void {
         self.http_client.deinit();
@@ -105,9 +114,30 @@ pub const Bot = struct {
         return try self.innerWithBody(types.Message, params.sendPaidMediaParams, "sendPaidMedia", options);
     }
 
+    // Inner polling logic
+
+    /// Start long poling
+    /// Big `workers_amount` can cause undefined behaivor, so MAX = 32
+    /// `timeout` in ms
+    pub fn longPolling(self: *Self, workers_amount: u8, timeout: u64, skip_updates: bool, options: params.getUpdatesParams) !void {
+        if (self.router == null) {
+            @panic("Router can't be null when using longPolling");
+        }
+        var poller = try Poller.init(self, workers_amount, timeout, self.allocator, self.router.?);
+        try poller.poll_loop(skip_updates, options);
+    }
+
     /// Use this method to receive incoming updates using long polling. Returns an Array of Update objects
-    pub fn getUpdates(self: *Self, options: params.getUpdatesParams) !json.ParsedResult([]types.Update) {
-        return try self.innerWithBody([]types.Update, params.getUpdatesParams, "getUpdates", options);
+    pub fn getUpdates(
+        self: *Self,
+        options: params.getUpdatesParams,
+    ) !types.Updates {
+        const updates_raw = try self.innerWithBody([]types.UpdateRaw, params.getUpdatesParams, "getUpdates", options);
+        var updates: []types.Update = try self.allocator.alloc(types.Update, updates_raw.data.len);
+        for (updates_raw.data, 0..) |ur, i| {
+            updates[i] = types.Update.fromRaw(ur, self);
+        }
+        return types.Updates{ .data = updates, .ptr = updates_raw };
     }
 
     // Private methods
