@@ -5,7 +5,7 @@ const HandlingType = @import("../handler/handling_type.zig").HandlingType;
 const HandlingTypeFromUpdate = @import("../handler/handling_type.zig").HandlingTypeFromUpdate;
 const Channel = @import("channel.zig").Channel;
 const Router = @import("../handler/handlers.zig").Router;
-const ApiError = @import("../error.zig").ApiError;
+const RouterFnType = @import("../handler/handling_values.zig").RouterFnType;
 
 pub const Worker = struct {
     id: u8,
@@ -51,7 +51,7 @@ pub const Worker = struct {
         }
     }
 
-    fn get_handling_by_update(self: *Worker, update: Update) ?*const fn (Update) ApiError!void {
+    fn get_handling_by_update(self: *Worker, update: Update) ?RouterFnType {
         const hType = HandlingTypeFromUpdate(update);
         return self.router.get(hType);
     }

@@ -36,16 +36,16 @@ pub const InlineKeyboardMarkupBuilder = struct {
     allocator: std.mem.Allocator,
 
     pub fn init(allocator: std.mem.Allocator) Self {
-        return Self{ .kb = std.ArrayList([]const InlineKeyboardButton).init(allocator), .allocator = allocator };
+        return Self{ .kb = std.ArrayList([]const InlineKeyboardButton).empty, .allocator = allocator };
     }
 
     /// Deinit inline_keyboard and return markup that should call either deinit or toReplyMarkup
     pub fn build(self: *Self) !InlineKeyboardMarkup {
-        const keyboard = try self.kb.toOwnedSlice();
+        const keyboard = try self.kb.toOwnedSlice(self.allocator);
         return InlineKeyboardMarkup{ .inline_keyboard = keyboard };
     }
 
     pub fn addRow(self: *Self, row: []const InlineKeyboardButton) !void {
-        try self.kb.append(try self.allocator.dupe(InlineKeyboardButton, row));
+        try self.kb.append(self.allocator, try self.allocator.dupe(InlineKeyboardButton, row));
     }
 };

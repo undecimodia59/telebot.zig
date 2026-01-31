@@ -85,7 +85,7 @@ pub const Poller = struct {
         }
 
         while (true) {
-            std.time.sleep(std.time.ns_per_ms * self.timeout);
+            std.Thread.sleep(std.time.ns_per_ms * self.timeout);
             options.offset = last_update_id + 1;
             var updates = self.owner.getUpdates(options) catch |e| {
                 std.log.err("Failed to get new updates: {any}", .{e});

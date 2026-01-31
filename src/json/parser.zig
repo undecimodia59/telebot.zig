@@ -1,7 +1,5 @@
 const std = @import("std");
 const api_error = @import("../core/error.zig");
-const ArrayList = std.ArrayList;
-
 pub fn Result(comptime T: type) type {
     return struct {
         ok: bool,
@@ -80,9 +78,8 @@ pub const Jsonifier = struct {
 
     /// Cast T to json
     pub fn JsonFromObject(self: Self, comptime T: type, value: T) ![]u8 {
-        var string = ArrayList(u8).init(self.allocator);
-        try std.json.stringify(value, .{ .emit_null_optional_fields = false }, string.writer());
-        std.log.debug("Json created: {s}", .{string.items});
-        return try string.toOwnedSlice();
+        const json_str = try std.json.Stringify.valueAlloc(self.allocator, value, .{ .emit_null_optional_fields = false });
+        std.log.debug("Json created: {s}", .{json_str});
+        return json_str;
     }
 };

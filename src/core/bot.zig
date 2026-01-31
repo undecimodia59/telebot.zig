@@ -171,15 +171,15 @@ pub const Bot = struct {
     }
 
     fn buildUrl(self: Self, method: []const u8) ![]u8 {
-        var final_url = ArrayList(u8).init(self.allocator);
-        defer final_url.deinit();
+        var final_url = ArrayList(u8).empty;
+        defer final_url.deinit(self.allocator);
 
-        try final_url.appendSlice(BASE_API_URL);
-        try final_url.appendSlice(self.token);
-        try final_url.append('/');
-        try final_url.appendSlice(method);
+        try final_url.appendSlice(self.allocator, BASE_API_URL);
+        try final_url.appendSlice(self.allocator, self.token);
+        try final_url.append(self.allocator, '/');
+        try final_url.appendSlice(self.allocator, method);
 
-        return try final_url.toOwnedSlice();
+        return try final_url.toOwnedSlice(self.allocator);
     }
 
     fn baseRequest(self: *Self, url: []u8, body_json: ?[]const u8) ![]u8 {
