@@ -23,6 +23,12 @@ pub const Video = struct {
     /// Optional. Video thumbnail.
     thumb: ?PhotoSize,
 
+    /// Optional. Cover of the video in the message.
+    cover: ?PhotoSize = null,
+
+    /// Optional. Timestamp of the video in the message.
+    start_timestamp: ?i32 = null,
+
     /// Optional. Original filename as defined by the sender.
     file_name: ?[]const u8,
 

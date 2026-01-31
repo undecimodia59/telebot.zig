@@ -46,6 +46,10 @@ pub const InputMediaVideo = struct {
     height: ?i32,
     // Optional. Video duration in seconds
     duration: ?i32,
+    // Optional. Cover for the video in the message
+    cover: ?[]const u8 = null,
+    // Optional. Start timestamp for the video in the message
+    start_timestamp: ?i32 = null,
     // Optional. Pass True if the uploaded video is suitable for streaming
     supports_streaming: ?bool,
     // Optional. Pass True if the video needs to be covered with a spoiler animation

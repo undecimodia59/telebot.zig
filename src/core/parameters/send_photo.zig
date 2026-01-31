@@ -12,6 +12,9 @@ pub const SendPhotoParameters = struct {
     /// Unique identifier for the target message thread (topic) of the forum; for forum supergroups only
     message_thread_id: ?i64 = null,
 
+    /// Unique identifier for the target direct messages chat topic; for channel direct messages chats only
+    direct_messages_topic_id: ?i64 = null,
+
     /// Photo to send. Pass a file_id as String to send a photo that exists on the Telegram servers (recommended), pass an HTTP URL as a String for Telegram to get a photo from the Internet, or upload a new photo using multipart/form-data.
     /// The photo must be at most 10 MB in size. The photo's width and height must not exceed 10000 in total.
     /// Width and height ratio must be at most 20.
@@ -45,6 +48,9 @@ pub const SendPhotoParameters = struct {
 
     /// Unique identifier of the message effect to be added to the message; for private chats only
     message_effect_id: ?[]const u8 = null,
+
+    /// A JSON-serialized object describing the suggested post parameters
+    suggested_post_parameters: ?[]u8 = null,
 
     /// Description of the message to reply to
     reply_parameters: ?ReplyParameters = null,

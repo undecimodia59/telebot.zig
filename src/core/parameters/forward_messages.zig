@@ -6,6 +6,9 @@ pub const ForwardMessagesParameters = struct {
     /// Unique identifier for the target message thread (topic) of the forum; for forum supergroups only
     message_thread_id: ?i64 = null,
 
+    /// Unique identifier for the target direct messages chat topic; for channel direct messages chats only
+    direct_messages_topic_id: ?i64 = null,
+
     /// Unique identifier for the chat where the original message was sent
     /// (@username is not supported)
     from_chat_id: i64,

@@ -36,4 +36,7 @@ pub const ReplyParameters = struct {
     /// Optional. Position of the quote in the original message, measured in UTF-16
     /// code units.
     quote_position: ?i32,
+
+    /// Optional. Identifier of the checklist task to be replied to
+    checklist_task_id: ?i64 = null,
 };

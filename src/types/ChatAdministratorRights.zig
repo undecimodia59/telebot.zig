@@ -43,4 +43,7 @@ pub const ChatAdministratorRights = struct {
 
     /// Optional. True, if the user is allowed to create, rename, close, and reopen forum topics; for supergroups only.
     can_manage_topics: ?bool,
+
+    /// Optional. True, if the administrator can manage direct messages in channels.
+    can_manage_direct_messages: ?bool,
 };

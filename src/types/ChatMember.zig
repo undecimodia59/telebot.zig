@@ -48,6 +48,8 @@ pub const ChatMember = union(enum) {
         can_pin_messages: ?bool = null,
         /// Optional. True, if the user is allowed to create, rename, close, and reopen forum topics; for supergroups only
         can_manage_topics: ?bool = null,
+        /// Optional. True, if the administrator can manage direct messages in channels
+        can_manage_direct_messages: ?bool = null,
         /// Custom title for this user
         custom_title: ?[]const u8 = null,
     },

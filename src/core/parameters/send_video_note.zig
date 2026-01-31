@@ -12,6 +12,9 @@ pub const SendVideoNoteParameters = struct {
     /// Unique identifier for the target message thread (topic) of the forum; for forum supergroups only.
     message_thread_id: ?i64 = null, // Optional
 
+    /// Unique identifier for the target direct messages chat topic; for channel direct messages chats only.
+    direct_messages_topic_id: ?i64 = null, // Optional
+
     /// Video note to send. Pass a file_id as String to send a video note that exists on the Telegram servers
     /// (recommended) or upload a new video using multipart/form-data. Sending video notes by a URL is currently unsupported.
     video_note: []const u8, // Required, InputFile or String
@@ -41,6 +44,9 @@ pub const SendVideoNoteParameters = struct {
 
     /// Unique identifier of the message effect to be added to the message; for private chats only.
     message_effect_id: ?[]const u8 = null, // Optional
+
+    /// A JSON-serialized object describing the suggested post parameters.
+    suggested_post_parameters: ?[]u8 = null, // Optional
 
     /// Description of the message to reply to.
     reply_parameters: ?ReplyParameters = null, // Optional

@@ -39,4 +39,7 @@ pub const User = struct {
 
     // Optional. True, if the bot has a main Web App
     has_main_web_app: ?bool = null,
+
+    // Optional. True, if forum topic mode is enabled for the bot in private chats
+    has_topics_enabled: ?bool = null,
 };

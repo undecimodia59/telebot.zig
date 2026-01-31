@@ -15,6 +15,9 @@ pub const SendMessageParameters = struct {
     /// Unique identifier for the target message thread (topic) of the forum; for forum supergroups only
     message_thread_id: ?i64 = null,
 
+    /// Unique identifier for the target direct messages chat topic; for channel direct messages chats only
+    direct_messages_topic_id: ?i64 = null,
+
     /// Mode for parsing entities in the message text.
     /// See [formatting options](https://core.telegram.org/bots/api#formatting-options) for more details
     parse_mode: ?[]const u8 = null,
@@ -38,6 +41,9 @@ pub const SendMessageParameters = struct {
 
     /// Unique identifier of the message effect to be added to the message; for private chats only
     message_effect_id: ?[]const u8 = null,
+
+    /// A JSON-serialized object describing the suggested post parameters
+    suggested_post_parameters: ?[]u8 = null,
 
     /// Description of the message to reply to
     reply_parameters: ?types.ReplyParameters = null,

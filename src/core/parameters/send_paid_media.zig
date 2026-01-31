@@ -12,7 +12,13 @@ pub const SendPaidMediaParameters = struct {
     /// Otherwise, they will be credited to the bot's balance.
     chat_id: i64,
 
-    /// The number of Telegram Stars that must be paid to buy access to the media; 1-2500.
+    /// Unique identifier for the target message thread (topic) of the forum; for forum supergroups only.
+    message_thread_id: ?i64 = null,
+
+    /// Unique identifier for the target direct messages chat topic; for channel direct messages chats only.
+    direct_messages_topic_id: ?i64 = null,
+
+    /// The number of Telegram Stars that must be paid to buy access to the media; 1-25000.
     star_count: i64,
 
     /// A JSON-serialized array describing the media to be sent; up to 10 items.
@@ -42,6 +48,9 @@ pub const SendPaidMediaParameters = struct {
     /// Pass True to allow up to 1000 messages per second, ignoring broadcasting limits for a fee of
     /// 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance.
     allow_paid_broadcast: ?bool = null,
+
+    /// A JSON-serialized object describing the suggested post parameters
+    suggested_post_parameters: ?[]u8 = null,
 
     /// Description of the message to reply to.
     reply_parameters: ?ReplyParameters = null,

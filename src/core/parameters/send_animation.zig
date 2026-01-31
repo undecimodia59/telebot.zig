@@ -12,6 +12,9 @@ pub const SendAnimationParameters = struct {
     /// Unique identifier for the target message thread (topic) of the forum; for forum supergroups only.
     message_thread_id: ?i64 = null,
 
+    /// Unique identifier for the target direct messages chat topic; for channel direct messages chats only.
+    direct_messages_topic_id: ?i64 = null,
+
     /// Animation to send. Pass a file_id as String to send an animation that exists on the Telegram servers
     /// (recommended), pass an HTTP URL as a String for Telegram to get an animation from the Internet, or
     /// upload a new animation using multipart/form-data. More information on Sending Files.
@@ -60,6 +63,9 @@ pub const SendAnimationParameters = struct {
 
     /// Unique identifier of the message effect to be added to the message; for private chats only.
     message_effect_id: ?[]const u8 = null,
+
+    /// A JSON-serialized object describing the suggested post parameters
+    suggested_post_parameters: ?[]u8 = null,
 
     /// Description of the message to reply to.
     reply_parameters: ?ReplyParameters = null,

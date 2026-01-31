@@ -21,4 +21,7 @@ pub const Chat = struct {
 
     // Optional. True, if the supergroup chat is a forum (has topics enabled)
     is_forum: ?bool = null,
+
+    // Optional. True, if the supergroup chat is used as a channel direct messages chat
+    is_direct_messages: ?bool = null,
 };

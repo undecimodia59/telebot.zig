@@ -3,6 +3,8 @@ pub const ForumTopic = struct {
     message_thread_id: i32,
     /// Name of the topic
     name: []const u8,
+    /// Optional. True, if the topic name is set implicitly
+    is_name_implicit: ?bool = null,
     /// Color of the topic icon in RGB format
     icon_color: i32,
     /// Optional. Unique identifier of the custom emoji shown as the topic icon

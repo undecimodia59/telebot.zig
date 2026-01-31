@@ -51,5 +51,6 @@ pub const ExternalReplyInfo = struct {
     invoice: ?Invoice = null, // Optional invoice information for payments
     location: ?Location = null, // Optional shared location
     poll: ?Poll = null, // Optional poll information
+    checklist: ?std.json.Value = null, // Optional checklist information
     venue: ?Venue = null, // Optional venue information
 };

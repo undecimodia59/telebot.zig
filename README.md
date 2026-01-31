@@ -1,6 +1,6 @@
 # telebot.zig
 ## Create telegram bot on your favourite zig simply
-![Telegram Bot API](https://img.shields.io/badge/Telegram_Bot_Api-8.0-blue)
+![Telegram Bot API](https://img.shields.io/badge/Telegram_Bot_Api-9.3-blue)
 ![Zig](https://img.shields.io/badge/Zig_version-0.15.2-orange)
 ![telebot.zig](https://img.shields.io/badge/telebot.zig-0.2.0-blue)
 
@@ -153,3 +153,10 @@ fn buildKeyboard(allocator: std.mem.Allocator) !InlineKeyboardMarkup {
 - [x] Polling
 - [ ] States
 - [ ] Fix all `TODO`
+- [ ] Bot API 9.0-9.3 missing types:
+- [ ] Business accounts: `BusinessBotRights`, `StarAmount`, `InputProfilePhoto`, story area types, owned gift types
+- [ ] Checklists: `Checklist`, `ChecklistTask`, `InputChecklist`, `InputChecklistTask`, checklist service message types
+- [ ] Direct messages: `DirectMessagesTopic` and related service message types
+- [ ] Gifts: `UniqueGift`, `UniqueGiftInfo`, `GiftInfo`, `AcceptedGiftTypes`, `GiftBackground`, `UniqueGiftColors`
+- [ ] Suggested posts: `SuggestedPostParameters`, `SuggestedPostInfo`, approval/decline service message types
+- [ ] ChatFullInfo extras: `UserRating`, `unique_gift_colors`, `accepted_gift_types`

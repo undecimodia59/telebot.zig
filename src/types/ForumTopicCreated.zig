@@ -3,6 +3,9 @@ pub const ForumTopicCreated = struct {
     // Name of the topic
     name: *const u8,
 
+    // Optional. True, if the topic name is set implicitly
+    is_name_implicit: ?bool = null,
+
     // Color of the topic icon in RGB format
     icon_color: i32,
 

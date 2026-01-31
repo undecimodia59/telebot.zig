@@ -1,3 +1,4 @@
+const std = @import("std");
 const ChatPhoto = @import("ChatPhoto.zig").ChatPhoto;
 const Birthdate = @import("Birthdate.zig").Birthdate;
 const BusinessIntro = @import("BusinessIntro.zig").BusinessIntro;
@@ -35,6 +36,9 @@ pub const ChatFullInfo = struct {
     /// Optional. True, if the supergroup chat is a forum (has topics enabled)
     is_forum: ?bool,
 
+    /// Optional. True, if the supergroup chat is used as a channel direct messages chat
+    is_direct_messages: ?bool,
+
     /// Identifier of the accent color for the chat name and backgrounds
     /// of the chat photo, reply header, and link preview.
     accent_color_id: ?i64,
@@ -63,6 +67,12 @@ pub const ChatFullInfo = struct {
 
     /// Optional. For private chats, the personal channel of the user
     personal_chat: ?Chat,
+
+    /// Optional. For direct messages chats, the parent channel
+    parent_chat: ?Chat,
+
+    /// Optional. Rating of the user in the chat
+    rating: ?std.json.Value,
 
     /// Optional. List of available reactions allowed in the chat.
     /// If omitted, then all emoji reactions are allowed.
@@ -142,6 +152,15 @@ pub const ChatFullInfo = struct {
 
     /// Optional. True, if messages from the chat can't be forwarded to other chats
     has_protected_content: ?bool,
+
+    /// Optional. Accepted gift types for the chat
+    accepted_gift_types: ?std.json.Value,
+
+    /// Optional. Unique gift colors for the chat
+    unique_gift_colors: ?std.json.Value,
+
+    /// Optional. Star count for paid messages in the chat
+    paid_message_star_count: ?i32,
 
     /// Optional. True, if new chat members will have access to old messages;
     /// available only to chat administrators
