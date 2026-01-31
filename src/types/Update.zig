@@ -122,12 +122,12 @@ pub const Update = struct {
 
     /// You can set .chat_id to 0 and it will be automatically based on update
     /// TODO: Rewrite to params.replyParams
-    pub fn reply(self: Update, options: params.sendMessageParams) !json.ParsedResult(Message) {
+    pub fn reply(self: Update, allocator: std.mem.Allocator, options: params.sendMessageParams) !json.ParsedResult(Message) {
         var opts = options;
         opts.chat_id = self.getUpdateDialog() catch {
             @panic("Found type that doesn't support reply!");
         };
-        return try self._bot.?.sendMessage(opts);
+        return try self._bot.?.sendMessage(allocator, opts);
     }
 
     fn getUpdateDialog(self: Update) ApiError!i64 {

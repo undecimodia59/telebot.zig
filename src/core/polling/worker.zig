@@ -1,5 +1,4 @@
 const std = @import("std");
-const Bot = @import("../bot.zig").Bot;
 const Update = @import("../../types/Update.zig").Update;
 const HandlingType = @import("../handler/handling_type.zig").HandlingType;
 const HandlingTypeFromUpdate = @import("../handler/handling_type.zig").HandlingTypeFromUpdate;
@@ -7,9 +6,14 @@ const Channel = @import("channel.zig").Channel;
 const Router = @import("../handler/handlers.zig").Router;
 const RouterFnType = @import("../handler/handling_values.zig").RouterFnType;
 
+const WorkItem = struct {
+    allocator: std.mem.Allocator,
+    update: *const Update,
+};
+
 pub const Worker = struct {
     id: u8,
-    receiver: Channel(*const Update), // Channel to receive pointers to updates
+    receiver: Channel(WorkItem), // Channel to receive update + allocator
     handle: ?std.Thread = null,
     router: Router,
     notify_processed: *const fn () void,
@@ -23,14 +27,14 @@ pub const Worker = struct {
     ) Worker {
         return Worker{
             .id = id,
-            .receiver = Channel(*const Update).init(allocator, channel_capacity),
+            .receiver = Channel(WorkItem).init(allocator, channel_capacity),
             .handle = null,
             .router = router,
             .notify_processed = notify_processed,
         };
     }
 
-    pub fn getChannel(self: *Worker) *Channel(*const Update) {
+    pub fn getChannel(self: *Worker) *Channel(WorkItem) {
         return &self.receiver;
     }
 
@@ -38,11 +42,15 @@ pub const Worker = struct {
         self.handle = try std.Thread.spawn(.{}, Worker.poller, .{self});
     }
 
+    pub fn deinit(self: *Worker, allocator: std.mem.Allocator) void {
+        self.receiver.deinit(allocator);
+    }
+
     fn poller(worker_ptr: *Worker) !void {
         while (true) {
-            const update = worker_ptr.receiver.receive();
-            if (worker_ptr.get_handling_by_update(update.*)) |handler| {
-                handler(update.*) catch |e| {
+            const item = worker_ptr.receiver.receive();
+            if (worker_ptr.get_handling_by_update(item.update.*)) |handler| {
+                handler(item.allocator, item.update.*) catch |e| {
                     std.log.err("Error on user-defined handler: {any}", .{e});
                 };
             }

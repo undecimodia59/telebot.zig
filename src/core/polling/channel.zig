@@ -3,7 +3,6 @@ const std = @import("std");
 // Define a generic Channel type
 pub fn Channel(comptime T: type) type {
     return struct {
-        allocator: std.mem.Allocator,
         buffer: []T,
         capacity: usize,
         read_index: usize,
@@ -18,7 +17,6 @@ pub fn Channel(comptime T: type) type {
             // Allocate buffer
             const buffer = allocator.alloc(T, capacity) catch unreachable;
             return Channel(T){
-                .allocator = allocator,
                 .buffer = buffer,
                 .capacity = capacity,
                 .read_index = 0,
@@ -30,8 +28,8 @@ pub fn Channel(comptime T: type) type {
             };
         }
 
-        pub fn deinit(self: *Channel(T)) void {
-            self.allocator.free(self.buffer);
+        pub fn deinit(self: *Channel(T), allocator: std.mem.Allocator) void {
+            allocator.free(self.buffer);
         }
 
         // Send a value to the channel. Blocks if the channel is full.
@@ -86,7 +84,7 @@ test "Channel" {
     var holder: i32 = undefined;
 
     var channel = Channel(Update).init(std.testing.allocator, 10);
-    defer channel.deinit();
+    defer channel.deinit(std.testing.allocator);
 
     var thread = try std.Thread.spawn(.{}, consumer, .{ &channel, &holder });
     produser(data_to_be_sent, &channel);
@@ -103,7 +101,7 @@ const Worker = struct {
         return Worker{ .receiver = Channel(*const Update).init(std.testing.allocator, 5) };
     }
     pub fn deinit(self: *Worker) void {
-        self.receiver.deinit();
+        self.receiver.deinit(std.testing.allocator);
     }
     pub fn start(self: *Worker) !void {
         self.handler = try std.Thread.spawn(.{}, Worker.pollUpdates, .{self});
@@ -124,12 +122,12 @@ fn getUpdate() ?Update {
 }
 test "Channel with worker" {
     var worker = Worker.init();
-    defer worker.deinit();
+    defer worker.deinit(std.testing.allocator);
     try worker.start();
 
     // Polling like
     while (true) {
-        std.time.sleep(std.time.ns_per_s);
+        std.Thread.sleep(std.time.ns_per_s);
         const update = getUpdate();
         if (update) |u| {
             worker.receiver.send(&u);

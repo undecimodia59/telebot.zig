@@ -1,12 +1,10 @@
 const std = @import("std");
 pub const HTTP = struct {
-    allocator: std.mem.Allocator,
     client: std.http.Client,
 
     pub fn init(allocator: std.mem.Allocator) HTTP {
         const client = std.http.Client{ .allocator = allocator };
         return HTTP{
-            .allocator = allocator,
             .client = client,
         };
     }
@@ -15,8 +13,8 @@ pub const HTTP = struct {
         self.client.deinit();
     }
 
-    pub fn makeRequest(self: *HTTP, url: []const u8) ![]u8 {
-        var response_writer = std.Io.Writer.Allocating.init(self.allocator);
+    pub fn makeRequest(self: *HTTP, allocator: std.mem.Allocator, url: []const u8) ![]u8 {
+        var response_writer = std.Io.Writer.Allocating.init(allocator);
         errdefer response_writer.deinit();
         const status = try self.client.fetch(.{
             .location = .{ .url = url },
@@ -28,8 +26,8 @@ pub const HTTP = struct {
         return try response_writer.toOwnedSlice();
     }
 
-    pub fn makePostRequest(self: *HTTP, url: []const u8, body: []const u8) ![]u8 {
-        var response_writer = std.Io.Writer.Allocating.init(self.allocator);
+    pub fn makePostRequest(self: *HTTP, allocator: std.mem.Allocator, url: []const u8, body: []const u8) ![]u8 {
+        var response_writer = std.Io.Writer.Allocating.init(allocator);
         errdefer response_writer.deinit();
 
         const status = try self.client.fetch(.{

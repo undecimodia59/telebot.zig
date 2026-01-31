@@ -26,29 +26,30 @@ pub fn main() !void {
         std.debug.print("Status: {any}\n", .{check});
     }
 
-    var bot = Bot.init(gpa.allocator(), TOKEN, router);
+    const allocator = gpa.allocator();
+    var bot = Bot.init(allocator, TOKEN, router);
     defer bot.deinit();
-    try bot.longPolling(2, 200, true, .{});
+    try bot.longPolling(allocator, 2, 200, true, .{});
 }
 
-fn text_handler(u: Update) !void {
+fn text_handler(allocator: std.mem.Allocator, u: Update) !void {
     const chat = u.message.?.chat.id;
     const mid = u.message.?.message_id;
-    var m = try u._bot.?.copyMessage(.{ .chat_id = chat, .from_chat_id = chat, .message_id = mid });
-    m.deinit();
+    var m = try u._bot.?.copyMessage(allocator, .{ .chat_id = chat, .from_chat_id = chat, .message_id = mid });
+    m.deinit(allocator);
 }
 
-fn pic_handler(u: Update) !void {
-    var m = try u.reply(.{ .chat_id = 0, .text = "Oh! Cute pic you have there!" });
-    m.deinit();
+fn pic_handler(allocator: std.mem.Allocator, u: Update) !void {
+    var m = try u.reply(allocator, .{ .chat_id = 0, .text = "Oh! Cute pic you have there!" });
+    m.deinit(allocator);
 }
 
-fn cmd_handler(u: Update) !void {
+fn cmd_handler(allocator: std.mem.Allocator, u: Update) !void {
     var m: ParsedResult(Message) = undefined;
     if (std.mem.eql(u8, u.message.?.text.?, "/love")) {
-        m = try u.reply(.{ .chat_id = 0, .text = "I love you too!" });
+        m = try u.reply(allocator, .{ .chat_id = 0, .text = "I love you too!" });
     } else {
-        m = try u.reply(.{ .chat_id = 0, .text = "I don't know this command!" });
+        m = try u.reply(allocator, .{ .chat_id = 0, .text = "I don't know this command!" });
     }
-    m.deinit();
+    m.deinit(allocator);
 }

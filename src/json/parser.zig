@@ -19,8 +19,8 @@ pub fn Result(comptime T: type) type {
 
 /// To access T, user ParsedResult.object
 /// ```zig
-/// var me_result = try bot.getMe();
-/// defer me_result.deinit();
+/// var me_result = try bot.getMe(allocator);
+/// defer me_result.deinit(allocator);
 /// const me = me_result.data;
 /// const id = me.id;
 /// const first_name = me.first_name;
@@ -33,34 +33,25 @@ pub fn ParsedResult(comptime T: type) type {
         parsed: std.json.Parsed(Result(T)),
         /// Received json in string
         json_str: []u8,
-        allocator: std.mem.Allocator,
 
         const Self = @This();
 
-        pub fn deinit(self: *Self) void {
-            self.allocator.free(self.json_str);
+        pub fn deinit(self: *Self, allocator: std.mem.Allocator) void {
+            allocator.free(self.json_str);
             self.parsed.deinit();
         }
 
-        pub fn init(allocator: std.mem.Allocator, parsed: std.json.Parsed(Result(T)), json_str: []u8, data: T) Self {
-            return Self{ .allocator = allocator, .parsed = parsed, .json_str = json_str, .data = data };
+        pub fn init(parsed: std.json.Parsed(Result(T)), json_str: []u8, data: T) Self {
+            return Self{ .parsed = parsed, .json_str = json_str, .data = data };
         }
     };
 }
 
 pub const Jsonifier = struct {
-    allocator: std.mem.Allocator,
-
-    const Self = @This();
-
-    pub fn init(allocator: std.mem.Allocator) Self {
-        return Self{ .allocator = allocator };
-    }
-
     /// Cast json to T
-    pub fn ObjectFromJson(self: Self, comptime T: type, json_str: []u8) !ParsedResult(T) {
+    pub fn ObjectFromJson(allocator: std.mem.Allocator, comptime T: type, json_str: []u8) !ParsedResult(T) {
         std.log.debug("Json received json: {s}", .{json_str});
-        var parsed = std.json.parseFromSlice(Result(T), self.allocator, json_str, .{}) catch |e| {
+        var parsed = std.json.parseFromSlice(Result(T), allocator, json_str, .{}) catch |e| {
             std.log.err("Error on json parsing: {any}", .{e});
             return e;
         };
@@ -72,13 +63,13 @@ pub const Jsonifier = struct {
             parsed.deinit();
             return err;
         } else {
-            return ParsedResult(T).init(self.allocator, parsed, json_str, parsed.value.result.?);
+            return ParsedResult(T).init(parsed, json_str, parsed.value.result.?);
         }
     }
 
     /// Cast T to json
-    pub fn JsonFromObject(self: Self, comptime T: type, value: T) ![]u8 {
-        const json_str = try std.json.Stringify.valueAlloc(self.allocator, value, .{ .emit_null_optional_fields = false });
+    pub fn JsonFromObject(allocator: std.mem.Allocator, comptime T: type, value: T) ![]u8 {
+        const json_str = try std.json.Stringify.valueAlloc(allocator, value, .{ .emit_null_optional_fields = false });
         std.log.debug("Json created: {s}", .{json_str});
         return json_str;
     }

@@ -21,7 +21,6 @@ pub const Poller = struct {
         },
     },
     timeout: u64,
-    allocator: std.mem.Allocator,
     router: Router,
 
     const Self = @This();
@@ -41,7 +40,6 @@ pub const Poller = struct {
                 .owner = owner,
                 .worker = .{ .single = {} },
                 .timeout = timeout,
-                .allocator = allocator,
                 .router = router,
             },
             2...MaxWorkers => |valid_amount| {
@@ -54,7 +52,6 @@ pub const Poller = struct {
                     .owner = owner,
                     .worker = .{ .multi = .{ .workers = workers, .amount = valid_amount } },
                     .timeout = timeout,
-                    .allocator = allocator,
                     .router = router,
                 };
             },
@@ -62,43 +59,46 @@ pub const Poller = struct {
         }
     }
 
-    pub fn deinit(self: *Self) void {
+    pub fn deinit(self: *Self, allocator: std.mem.Allocator) void {
         switch (self.worker) {
             .multi => |m| {
-                self.allocator.free(m);
+                for (m.workers) |*worker| {
+                    worker.deinit(allocator);
+                }
+                allocator.free(m.workers);
             },
             else => {},
         }
     }
 
-    pub fn poll_loop(self: *Self, skip_updates: bool, user_options: GetUpdatesParams) !void {
+    pub fn poll_loop(self: *Self, allocator: std.mem.Allocator, skip_updates: bool, user_options: GetUpdatesParams) !void {
         var options = user_options;
         options.limit = UpdatesLimit;
 
         var last_update_id: i64 = 0;
         if (skip_updates) {
-            var updates = try self.owner.getUpdates(options);
+            var updates = try self.owner.getUpdates(allocator, options);
             if (updates.data.len != 0) {
                 last_update_id = updates.data[updates.data.len - 1].update_id;
             }
-            updates.deinit();
+            updates.deinit(allocator);
         }
 
         while (true) {
             std.Thread.sleep(std.time.ns_per_ms * self.timeout);
             options.offset = last_update_id + 1;
-            var updates = self.owner.getUpdates(options) catch |e| {
+            var updates = self.owner.getUpdates(allocator, options) catch |e| {
                 std.log.err("Failed to get new updates: {any}", .{e});
                 return;
             };
-            defer updates.deinit();
+            defer updates.deinit(allocator);
 
             switch (self.worker) {
                 .single => {
-                    try self.single_worker(&updates);
+                    try self.single_worker(allocator, &updates);
                 },
                 .multi => {
-                    try self.multi_worker(&updates);
+                    try self.multi_worker(allocator, &updates);
                 },
             }
 
@@ -106,19 +106,19 @@ pub const Poller = struct {
         }
     }
 
-    fn single_worker(self: *Self, updates: *types.Updates) !void {
+    fn single_worker(self: *Self, allocator: std.mem.Allocator, updates: *types.Updates) !void {
         for (updates.data) |update| {
             // Find type of update
             const hType = HandlingTypeFromUpdate(update);
             if (self.router.get(hType)) |f| {
-                f(update) catch |e| {
+                f(allocator, update) catch |e| {
                     std.log.err("Error on user defined handler: {any}", .{e});
                 };
             }
         }
     }
 
-    fn multi_worker(self: *Self, updates: *types.Updates) !void {
+    fn multi_worker(self: *Self, allocator: std.mem.Allocator, updates: *types.Updates) !void {
         // Increment the processing counter by the number of updates
         const num_updates = updates.data.len;
         _ = processing_counter.fetchAdd(num_updates, .monotonic);
@@ -131,7 +131,7 @@ pub const Poller = struct {
 
             std.log.debug("Sending update to worker №{d} ({*})", .{ worker.id, &worker });
             // Send the update to the worker's channel
-            worker.getChannel().send(&update);
+            worker.getChannel().send(.{ .allocator = allocator, .update = &update });
         }
 
         // After sending all updates, wait for all to be processed

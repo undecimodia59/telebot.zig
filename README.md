@@ -13,7 +13,8 @@
 ### Usage:
 #### Create bot object:
 ```zig
-var bot = Bot.init(std.heap.page_allocator, TOKEN);
+const allocator = std.heap.page_allocator;
+var bot = Bot.init(allocator, TOKEN, null);
 defer bot.deinit();
 ```
 
@@ -21,8 +22,9 @@ defer bot.deinit();
 ```zig
 /// Receive and print details about bot
 fn printMe(bot: *Bot) !void {
-    var me_res = try bot.getMe();
-    defer me_res.deinit();
+    const allocator = std.heap.page_allocator;
+    var me_res = try bot.getMe(allocator);
+    defer me_res.deinit(allocator);
 
     const me = me_res.data;
     std.debug.print("Hi! Im bot on zig! My name is {s} (@{s}). My id: {d}\n", .{ me.first_name, me.username.?, me.id });
@@ -33,8 +35,9 @@ fn printMe(bot: *Bot) !void {
 ```zig
 /// Sends single message
 fn sendTestMessage(bot: *Bot) !void {
-    var msg = try bot.sendMessage(.{ .chat_id = TEST_RECEIVER, .text = "Hi from zig!" });
-    defer msg.deinit();
+    const allocator = std.heap.page_allocator;
+    var msg = try bot.sendMessage(allocator, .{ .chat_id = TEST_RECEIVER, .text = "Hi from zig!" });
+    defer msg.deinit(allocator);
 
     const m = msg.data;
     const username = m.chat.username orelse "NoUsername";
@@ -42,12 +45,12 @@ fn sendTestMessage(bot: *Bot) !void {
 
     std.debug.print("I have sent message with id: {d} for {s} (@{s})\n", .{ m.message_id, name, username });
 
-    var data = std.ArrayList(u8).init(std.heap.page_allocator);
-    defer data.deinit();
-    try std.fmt.format(data.writer(), "Hello, {s} (@{s})", .{ name, username });
+    var data = std.ArrayList(u8).empty;
+    defer data.deinit(allocator);
+    try std.fmt.format(data.writer(allocator), "Hello, {s} (@{s})", .{ name, username });
 
-    var m2 = try bot.sendMessage(.{ .chat_id = TEST_RECEIVER, .text = data.allocatedSlice() });
-    defer m2.deinit();
+    var m2 = try bot.sendMessage(allocator, .{ .chat_id = TEST_RECEIVER, .text = data.items });
+    defer m2.deinit(allocator);
 }
 ```
 
@@ -55,13 +58,14 @@ fn sendTestMessage(bot: *Bot) !void {
 ```zig
 /// Will send single message and then forward it to the same dialog
 fn forwardTestMessage(bot: *Bot) !void {
+    const allocator = std.heap.page_allocator;
     const real_text = "LA-LA-LA";
-    var msg1 = try bot.sendMessage(.{ .chat_id = TEST_RECEIVER, .text = real_text });
-    defer msg1.deinit();
+    var msg1 = try bot.sendMessage(allocator, .{ .chat_id = TEST_RECEIVER, .text = real_text });
+    defer msg1.deinit(allocator);
     const mid = msg1.data.message_id;
 
-    var msg2 = try bot.forwardMessage(.{ .chat_id = TEST_RECEIVER, .from_chat_id = TEST_RECEIVER, .message_id = mid });
-    defer msg2.deinit();
+    var msg2 = try bot.forwardMessage(allocator, .{ .chat_id = TEST_RECEIVER, .from_chat_id = TEST_RECEIVER, .message_id = mid });
+    defer msg2.deinit(allocator);
     const text = msg2.data.text orelse "no text";
     std.debug.print("Forwarded message text: {s} (expected: {s})\n", .{ text, real_text });
 }
@@ -71,12 +75,13 @@ fn forwardTestMessage(bot: *Bot) !void {
 ```zig
 /// Will send message and then copy it to the same chat
 fn copyTestMessage(bot: *Bot) !void {
-    var msg = try bot.sendMessage(.{ .chat_id = TEST_RECEIVER, .text = "Message to be copied!" });
-    defer msg.deinit();
+    const allocator = std.heap.page_allocator;
+    var msg = try bot.sendMessage(allocator, .{ .chat_id = TEST_RECEIVER, .text = "Message to be copied!" });
+    defer msg.deinit(allocator);
 
     const m_id = msg.data.message_id;
-    var id = try bot.copyMessage(.{ .chat_id = TEST_RECEIVER, .message_id = m_id, .from_chat_id = TEST_RECEIVER });
-    defer id.deinit();
+    var id = try bot.copyMessage(allocator, .{ .chat_id = TEST_RECEIVER, .message_id = m_id, .from_chat_id = TEST_RECEIVER });
+    defer id.deinit(allocator);
 }
 ```
 
@@ -85,19 +90,20 @@ fn copyTestMessage(bot: *Bot) !void {
 /// Will send just photo by url, then extract file_id and send with caption, spoiler and caption above photo
 /// Currently support sending photos by url or file_id (no file upload)
 fn sendTestPhoto(bot: *Bot) !void {
+    const allocator = std.heap.page_allocator;
     const PHOTO_URL = "https://picsum.photos/720";
-    var msg = try bot.sendPhoto(.{ .chat_id = TEST_RECEIVER, .photo = PHOTO_URL });
-    defer msg.deinit();
+    var msg = try bot.sendPhoto(allocator, .{ .chat_id = TEST_RECEIVER, .photo = PHOTO_URL });
+    defer msg.deinit(allocator);
 
     const file_id = msg.data.photo.?[0].file_id;
-    var m = try bot.sendPhoto(.{ .chat_id = TEST_RECEIVER, .photo = file_id, .caption = "BLAH-BLAH-BLAH1" });
-    m.deinit();
+    var m = try bot.sendPhoto(allocator, .{ .chat_id = TEST_RECEIVER, .photo = file_id, .caption = "BLAH-BLAH-BLAH1" });
+    m.deinit(allocator);
 
-    var m2 = try bot.sendPhoto(.{ .chat_id = TEST_RECEIVER, .photo = file_id, .caption = "BLAH-BLAH-BLAH2", .has_spoiler = true });
-    m2.deinit();
+    var m2 = try bot.sendPhoto(allocator, .{ .chat_id = TEST_RECEIVER, .photo = file_id, .caption = "BLAH-BLAH-BLAH2", .has_spoiler = true });
+    m2.deinit(allocator);
 
-    var m3 = try bot.sendPhoto(.{ .chat_id = TEST_RECEIVER, .photo = file_id, .caption = "BLAH-BLAH-BLAH3", .show_caption_above_media = true });
-    m3.deinit();
+    var m3 = try bot.sendPhoto(allocator, .{ .chat_id = TEST_RECEIVER, .photo = file_id, .caption = "BLAH-BLAH-BLAH3", .show_caption_above_media = true });
+    m3.deinit(allocator);
 }
 ```
 
@@ -111,18 +117,18 @@ const InlineKeyboardButton = Keyboard.InlineKeyboardButton;
 pub fn main() !void {
     const allocator = std.heap.page_allocator;
 
-    var bot = Bot.init(allocator, TOKEN);
+    var bot = Bot.init(allocator, TOKEN, null);
     defer bot.deinit();
     var inlineKb = try buildKeyboard(allocator);
     const json = try inlineKb.toReplyMarkup(allocator);
     defer allocator.free(json);
 
-    var m = try bot.sendMessage(.{ .chat_id = TEST_RECEIVER, .text = "Testing keyboard that sent with telebot.zig!", .reply_markup = json });
-    defer m.deinit();
+    var m = try bot.sendMessage(allocator, .{ .chat_id = TEST_RECEIVER, .text = "Testing keyboard that sent with telebot.zig!", .reply_markup = json });
+    defer m.deinit(allocator);
 }
 
 fn buildKeyboard(allocator: std.mem.Allocator) !InlineKeyboardMarkup {
-    var builder = InlineBuilder.init(allocator);
+    var builder = InlineBuilder.init();
 
     const dynamic_value: []const u8 = std.mem.span(std.os.argv[0]);
 
@@ -134,9 +140,9 @@ fn buildKeyboard(allocator: std.mem.Allocator) !InlineKeyboardMarkup {
         .{ .text = "Row 2 Button 1", .web_app = .{ .url = "https://spreadprivacy.com/" } },
     };
 
-    try builder.addRow(row1);
-    try builder.addRow(row2);
-    return builder.build();
+    try builder.addRow(allocator, row1);
+    try builder.addRow(allocator, row2);
+    return builder.build(allocator);
 }
 ```
 > And more methods avaliable in this lib (Most of them works similar)
